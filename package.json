@@ -1,0 +1,11 @@
+{
+  "name": "lockn",
+  "version": "0.0.0",
+  "description": "",
+  "scripts": {
+    "server": "cd server && gf run ./main.go"
+  },
+  "keywords": [],
+  "author": "leviegu <leviegu@gmail.com>",
+  "license": "MIT"
+}
