@@ -2,14 +2,15 @@
 // Code generated and maintained by GoFrame CLI tool. DO NOT EDIT.
 // =================================================================================
 
-package hello
+package do
 
 import (
-	"context"
-
-	"server/api/hello/v1"
+	"github.com/gogf/gf/v2/frame/g"
 )
 
-type IHelloV1 interface {
-	Hello(ctx context.Context, req *v1.HelloReq) (res *v1.HelloRes, err error)
+// Roles is the golang structure of table roles for DAO operations like Where/Data.
+type Roles struct {
+	g.Meta   `orm:"table:roles, do:true"`
+	RoleId   interface{} //
+	RoleName interface{} //
 }
