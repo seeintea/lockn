@@ -13,7 +13,7 @@ import (
 )
 
 func (u *Users) Register(ctx context.Context, username, password, email string) error {
-	count, err := dao.Users.Ctx(ctx).Where("username", username).Where("email", email).Count()
+	count, err := dao.Users.Ctx(ctx).Where("username", username).WhereOr("email", email).Count()
 	if err != nil {
 		return err
 	}
