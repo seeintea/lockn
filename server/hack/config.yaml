@@ -11,3 +11,9 @@ gfcli:
     build: "-a amd64 -s linux -p temp -ew"
     tagPrefixes:
       - my.image.pub/my-app
+
+  redis:
+    default:
+      address: 127.0.0.1:6379
+      db: 1
+      pass: g12345678

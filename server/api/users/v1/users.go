@@ -19,7 +19,9 @@ type LoginReq struct {
 	Password string `json:"password" v:"required|length:6,32" dc:"密码"`
 }
 
-type LoginRes struct{}
+type LoginRes struct {
+	Token string `json:"token" dc:"在需要鉴权的接口中 header 加入 Authorization: token"`
+}
 
 type DeleteReq struct {
 	g.Meta `path:"/users/delete" method:"post" sm:"删除" tags:"用户"`
