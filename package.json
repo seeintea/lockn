@@ -3,7 +3,9 @@
   "version": "0.0.0",
   "description": "",
   "scripts": {
-    "server": "cd server && gf run ./main.go"
+    "server": "cd server && gf run ./main.go",
+    "server:dao": "cd server && gf gen dao",
+    "server:ctrl": "cd server && gf gen ctrl"
   },
   "keywords": [],
   "author": "leviegu <leviegu@gmail.com>",
