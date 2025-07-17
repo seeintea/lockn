@@ -4,5 +4,6 @@
     "ghttp",
     "gogf",
     "lockn"
-  ]
+  ],
+  "recommendations": ["Vue.volar"]
 }

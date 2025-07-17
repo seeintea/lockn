@@ -1,0 +1,3 @@
+<template>
+  lockn-vue
+</template>
