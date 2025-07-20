@@ -4,7 +4,7 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/lockn/packages/backstage/api/auth/v1"
+	v1 "github.com/lockn/packages/backstage/api/auth/v1"
 )
 
 func (c *ControllerV1) Register(ctx context.Context, req *v1.RegisterReq) (res *v1.RegisterRes, err error) {

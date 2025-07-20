@@ -36,8 +36,9 @@ type RegisterRes struct {
 }
 
 type ResetPasswordReq struct {
-	g.Meta `path:"/auth/reset" method:"post" sm:"重置密码" tags:"用户认证"`
-	UserId string `json:"userId" dc:"用户ID"`
+	g.Meta   `path:"/auth/reset" method:"post" sm:"重置密码" tags:"用户认证"`
+	UserId   string `json:"userId" dc:"用户ID"`
+	Password string `json:"password" dc:"充值密码"`
 }
 
 type ResetPasswordRes struct{}

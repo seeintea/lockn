@@ -3,12 +3,13 @@ package auth
 import (
 	"context"
 
-	"github.com/gogf/gf/v2/errors/gcode"
-	"github.com/gogf/gf/v2/errors/gerror"
-
-	"github.com/lockn/packages/backstage/api/auth/v1"
+	v1 "github.com/lockn/packages/backstage/api/auth/v1"
 )
 
 func (c *ControllerV1) Login(ctx context.Context, req *v1.LoginReq) (res *v1.LoginRes, err error) {
-	return nil, gerror.NewCode(gcode.CodeNotImplemented)
+	res, err = c.auth.Login(ctx, req.Username, req.Password)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }

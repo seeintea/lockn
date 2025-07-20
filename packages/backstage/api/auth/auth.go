@@ -7,7 +7,7 @@ package auth
 import (
 	"context"
 
-	"github.com/lockn/packages/backstage/api/auth/v1"
+	v1 "github.com/lockn/packages/backstage/api/auth/v1"
 )
 
 type IAuthV1 interface {
