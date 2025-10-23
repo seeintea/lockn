@@ -5,5 +5,11 @@
   "scripts": {},
   "keywords": [],
   "author": "leviegu <leviegu@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "prettier": "3.6.2"
+  },
+  "dependencies": {
+    "@prettier/plugin-oxc": "^0.0.4"
+  }
 }
