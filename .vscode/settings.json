@@ -1,9 +1,8 @@
 {
-  "cSpell.words": [
-    "gcmd",
-    "ghttp",
-    "gogf",
-    "lockn"
-  ],
-  "recommendations": ["Vue.volar"]
+  "cSpell.words": ["lockn", "rsbuild"],
+  "editor.formatOnSave": true,
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" }
 }

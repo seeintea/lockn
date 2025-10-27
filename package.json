@@ -2,12 +2,13 @@
   "name": "lockn",
   "version": "0.0.0",
   "description": "",
-  "scripts": {
-    "bs": "cd packages/backstage && gf run ./main.go",
-    "bs:dao": "cd packages/backstage && gf gen dao",
-    "bs:ctrl": "cd packages/backstage && gf gen ctrl"
-  },
+  "scripts": {},
   "keywords": [],
   "author": "leviegu <leviegu@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@prettier/plugin-oxc": "^0.0.4",
+    "prettier": "3.6.2",
+    "typescript": "^5.9.3"
+  }
 }
