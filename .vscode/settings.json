@@ -1,9 +1,4 @@
 {
-  "cSpell.words": [
-    "gcmd",
-    "ghttp",
-    "gogf",
-    "lockn"
-  ],
-  "recommendations": ["Vue.volar"]
+  "cSpell.words": ["lockn", "rsbuild"],
+  "editor.formatOnSave": true
 }
