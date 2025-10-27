@@ -25,6 +25,22 @@ const config = {
   embeddedLanguageFormatting: "auto",
   printWidth: 120,
   plugins: ["@prettier/plugin-oxc"],
+  overrides: [
+    {
+      files: "**/*.{js,mjs,cjs,jsx}",
+      options: {
+        plugins: ["@prettier/plugin-oxc"],
+        parser: "oxc",
+      },
+    },
+    {
+      files: "**/*.{ts,mts,cts,tsx}",
+      options: {
+        plugins: ["@prettier/plugin-oxc"],
+        parser: "oxc-ts",
+      },
+    },
+  ],
 }
 
 export default config
