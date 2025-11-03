@@ -3,14 +3,14 @@
   "version": "0.0.1",
   "description": "",
   "main": "index.js",
-  "scripts": {
-    "dev": "rsbuild dev",
-    "build": "rsbuild build"
-  },
   "keywords": [],
   "author": "leviegu <leviegu@gmail.com>",
   "license": "MIT",
   "packageManager": "pnpm@10.7.1",
+  "scripts": {
+    "dev": "rsbuild dev",
+    "build": "rsbuild build"
+  },
   "dependencies": {
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
