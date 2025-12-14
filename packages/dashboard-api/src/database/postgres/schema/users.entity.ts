@@ -1,6 +1,6 @@
 import { boolean, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core"
 
-export const user = pgTable("sys_user", {
+export const users = pgTable("sys_user", {
   id: serial("id").primaryKey(),
   email: text("email").notNull().unique(),
   name: text("name").notNull(),
@@ -12,4 +12,5 @@ export const user = pgTable("sys_user", {
   updatedAt: timestamp("updated_at").defaultNow(),
 })
 
-export type User = typeof user.$inferInsert
+export type User = typeof users.$inferSelect
+export type InsertUser = typeof users.$inferInsert

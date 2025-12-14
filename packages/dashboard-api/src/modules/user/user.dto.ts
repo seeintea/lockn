@@ -1,11 +1,10 @@
-import type { User } from "@database/schema/user.entity"
+import type { InsertUser, User } from "@database/postgres/schema/users.entity"
 import { z } from "zod"
 
 const shareShape = {
   name: z.string().min(6).max(32),
   email: z.email(),
   password: z.string().length(21),
-  salt: z.string().length(16),
 } satisfies z.ZodRawShape
 
 export const CreateUserSchema = z.object(shareShape)
@@ -19,4 +18,5 @@ export const UpdateUserSchema = z.object({
 
 export type CreateUserDto = z.infer<typeof CreateUserSchema>
 export type UpdateUserDto = z.infer<typeof UpdateUserSchema>
-export type { User }
+
+export type { User, InsertUser }
