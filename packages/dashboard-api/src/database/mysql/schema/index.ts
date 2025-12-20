@@ -1,7 +1,7 @@
-import { users } from "./users.entity"
+import { user } from "./user.entity"
 
 export const schema = {
-  users,
+  user,
 }
 
 export type Schema = typeof schema

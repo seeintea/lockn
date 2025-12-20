@@ -1,10 +1,10 @@
 import { defineConfig } from "drizzle-kit"
 
 export default defineConfig({
-  schema: "./src/database/postgres/schema/**.entity.ts",
-  out: "./src/database/postgres/migrations",
-  dialect: "postgresql",
+  schema: "./src/database/mysql/schema/**.entity.ts",
+  out: "./src/database/mysql/migrations",
+  dialect: "mysql",
   dbCredentials: {
-    url: process.env.PG_DATABASE_URL!,
+    url: process.env.MYSQL_DATABASE_URL!,
   },
 })

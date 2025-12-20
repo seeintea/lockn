@@ -1,22 +1,28 @@
-import type { InsertUser, User } from "@database/postgres/schema/users.entity"
+import type { User, UserInsert } from "@database/mysql"
 import { z } from "zod"
 
-const shareShape = {
-  name: z.string().min(6).max(32),
-  email: z.email(),
-  password: z.string().length(21),
+const shape = {
+  username: z.string().min(6).max(30),
+  password: z.string().max(32),
+  deptId: z.number(),
+  email: z.email().nullish(),
+  phone: z.string().nullish(),
 } satisfies z.ZodRawShape
 
-export const CreateUserSchema = z.object(shareShape)
+export const CreateUserSchema = z.object(shape)
 
 export const UpdateUserSchema = z.object({
-  id: z.number(),
-  name: shareShape.name.nullish(),
-  email: shareShape.name.nullish(),
-  password: shareShape.name.nullish(),
+  userId: z.bigint(),
+  username: shape.username.nullish(),
+  password: shape.password.nullish(),
+  deptId: shape.deptId.nullish(),
+  email: shape.email.nullish(),
+  phone: shape.phone.nullish(),
+  isDisabled: z.union([z.literal(0), z.literal(1)]).nullish(),
+  isDeleted: z.union([z.literal(0), z.literal(1)]).nullable(),
 })
 
 export type CreateUserDto = z.infer<typeof CreateUserSchema>
 export type UpdateUserDto = z.infer<typeof UpdateUserSchema>
 
-export type { User, InsertUser }
+export type { User, UserInsert }

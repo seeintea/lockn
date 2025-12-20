@@ -1,19 +1,32 @@
-import { Body, Controller, Get, Post, Query } from "@nestjs/common"
-import type { CreateUserDto } from "./user.dto"
+import { createHash } from "node:crypto"
+import { ShortSnowflakeService } from "@common/utils"
+import { Body, Controller, Post } from "@nestjs/common"
+import { nanoid } from "nanoid"
+import type { CreateUserDto, User } from "./user.dto"
 import { UserService } from "./user.service"
 
-@Controller("user")
+@Controller("sys/user")
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly snowflakeService: ShortSnowflakeService,
+  ) {}
 
   @Post("create")
-  create(@Body() createUserDto: CreateUserDto) {
-    const salt: string = "1234567890123456"
-    return this.userService.create({ ...createUserDto, salt })
-  }
-
-  @Get("find")
-  find(@Query("id") id: number) {
-    return this.userService.get(id)
+  async create(@Body() createUserDto: CreateUserDto) {
+    const salt = nanoid(16)
+    const { password: origin, ...other } = createUserDto
+    const password = createHash("sha256").update(`${origin}${salt}`).digest("hex")
+    const user: Partial<User> = await this.userService.create({
+      ...other,
+      salt,
+      password,
+      isDisabled: 0,
+      isDeleted: 0,
+      userId: this.snowflakeService.nextId(),
+    })
+    delete user.password
+    delete user.salt
+    return user as Omit<User, "password" | "salt">
   }
 }

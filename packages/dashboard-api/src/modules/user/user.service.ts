@@ -1,26 +1,28 @@
-import { type PgDatabase, POSTGRES_TOKEN, pgSchema } from "@database"
+import { MYSQL_TOKEN, type MySqlDatabase, mysqlSchema } from "@database"
 import { Inject, Injectable } from "@nestjs/common"
 import { eq } from "drizzle-orm"
-import { InsertUser, User } from "./user.dto"
+import { User, UserInsert } from "./user.dto"
 
-const { users } = pgSchema
+const { user: userSchema } = mysqlSchema
 
 @Injectable()
 export class UserService {
-  constructor(@Inject(POSTGRES_TOKEN) private readonly db: PgDatabase) {}
+  constructor(@Inject(MYSQL_TOKEN) private readonly db: MySqlDatabase) {}
 
-  async create(insertUser: InsertUser): Promise<User> {
-    const result = await this.db.insert(users).values(insertUser).returning()
-    return result[0]
+  async find(userId: User["userId"]): Promise<User> {
+    const user = await this.db.select().from(userSchema).where(eq(userSchema.userId, userId))
+    if (user.length) {
+      return user[0]
+    }
+    throw new Error("查找用户失败")
   }
 
-  async get(id: number): Promise<User> {
-    const result = await this.db.select().from(users).where(eq(users.id, id))
-    return result[0]
-  }
-
-  async list(): Promise<User[]> {
-    const result = await this.db.select().from(users)
-    return result
+  async create(insertUser: UserInsert): Promise<User> {
+    await this.db.insert(userSchema).values(insertUser)
+    const user = await this.find(insertUser.userId)
+    if (user) {
+      return user
+    }
+    throw new Error("创建用户失败")
   }
 }
