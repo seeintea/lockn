@@ -12,9 +12,8 @@ const shape = {
 export const CreateUserSchema = z.object(shape)
 
 export const UpdateUserSchema = z.object({
-  userId: z.bigint(),
+  userId: z.string(),
   username: shape.username.nullish(),
-  password: shape.password.nullish(),
   deptId: shape.deptId.nullish(),
   email: shape.email.nullish(),
   phone: shape.phone.nullish(),
@@ -22,7 +21,15 @@ export const UpdateUserSchema = z.object({
   isDeleted: z.union([z.literal(0), z.literal(1)]).nullable(),
 })
 
+export const UpdatePasswordSchema = z.object({
+  userId: z.string(),
+  oldPassword: shape.password,
+  newPassword: shape.password,
+})
+
 export type CreateUserDto = z.infer<typeof CreateUserSchema>
 export type UpdateUserDto = z.infer<typeof UpdateUserSchema>
+export type UpdatePasswordDto = z.infer<typeof UpdatePasswordSchema>
 
 export type { User, UserInsert }
+export type UserUpdate = Omit<User, "createTime" | "updateTime">

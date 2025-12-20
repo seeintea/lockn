@@ -1,7 +1,7 @@
 import { MYSQL_TOKEN, type MySqlDatabase, mysqlSchema } from "@database"
 import { Inject, Injectable } from "@nestjs/common"
-import { eq } from "drizzle-orm"
-import { User, UserInsert } from "./user.dto"
+import { and, eq } from "drizzle-orm"
+import type { User, UserInsert, UserUpdate } from "./user.dto"
 
 const { user: userSchema } = mysqlSchema
 
@@ -9,20 +9,38 @@ const { user: userSchema } = mysqlSchema
 export class UserService {
   constructor(@Inject(MYSQL_TOKEN) private readonly db: MySqlDatabase) {}
 
-  async find(userId: User["userId"]): Promise<User> {
-    const user = await this.db.select().from(userSchema).where(eq(userSchema.userId, userId))
-    if (user.length) {
-      return user[0]
-    }
-    throw new Error("查找用户失败")
+  async find(userId: User["userId"], withPassword = false) {
+    const users = await this.db
+      .select({
+        userId: userSchema.userId,
+        username: userSchema.username,
+        deptId: userSchema.deptId,
+        email: userSchema.email,
+        phone: userSchema.phone,
+        isDeleted: userSchema.isDeleted,
+        isDisabled: userSchema.isDisabled,
+        ...(withPassword
+          ? {
+              password: userSchema.password,
+              salt: userSchema.salt,
+            }
+          : {}),
+      })
+      .from(userSchema)
+      .where(and(eq(userSchema.userId, userId), eq(userSchema.isDeleted, 0)))
+    return users[0] || null
   }
 
-  async create(insertUser: UserInsert): Promise<User> {
+  async create(insertUser: UserInsert) {
     await this.db.insert(userSchema).values(insertUser)
     const user = await this.find(insertUser.userId)
-    if (user) {
-      return user
-    }
-    throw new Error("创建用户失败")
+    return user || null
   }
+
+  async update(updateUser: UserUpdate) {
+    await this.db.update(userSchema).set(updateUser).where(eq(userSchema.userId, updateUser.userId))
+    return this.find(updateUser.userId)
+  }
+
+  async list() {}
 }
