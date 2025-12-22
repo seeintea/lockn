@@ -1,5 +1,5 @@
 import { MYSQL_TOKEN, type MySqlDatabase, mysqlSchema } from "@database"
-import { Inject, Injectable } from "@nestjs/common"
+import { Inject, Injectable, Logger } from "@nestjs/common"
 import { and, eq } from "drizzle-orm"
 import type { User, UserInsert, UserUpdate } from "./user.dto"
 
@@ -7,9 +7,11 @@ const { user: userSchema } = mysqlSchema
 
 @Injectable()
 export class UserService {
+  private readonly logger = new Logger(UserService.name)
   constructor(@Inject(MYSQL_TOKEN) private readonly db: MySqlDatabase) {}
 
   async find(userId: User["userId"], withPassword = false) {
+    this.logger.log(`find user ${userId}`)
     const users = await this.db
       .select({
         userId: userSchema.userId,

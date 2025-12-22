@@ -2,8 +2,8 @@ import type { User, UserInsert } from "@database/mysql"
 import { z } from "zod"
 
 const shape = {
-  username: z.string().min(6).max(30),
-  password: z.string().max(32),
+  username: z.string().min(6).max(30).describe("用户名"),
+  password: z.string().max(32).describe("密码"),
   deptId: z.number(),
   email: z.email().nullish(),
   phone: z.string().nullish(),
@@ -21,11 +21,13 @@ export const UpdateUserSchema = z.object({
   isDeleted: z.union([z.literal(0), z.literal(1)]).nullable(),
 })
 
-export const UpdatePasswordSchema = z.object({
-  userId: z.string(),
-  oldPassword: shape.password,
-  newPassword: shape.password,
-})
+export const UpdatePasswordSchema = z
+  .object({
+    userId: z.string().describe("用户ID"),
+    oldPassword: shape.password.describe("旧密码"),
+    newPassword: shape.password.describe("新密码"),
+  })
+  .meta({ id: "更新密码" })
 
 export type CreateUserDto = z.infer<typeof CreateUserSchema>
 export type UpdateUserDto = z.infer<typeof UpdateUserSchema>

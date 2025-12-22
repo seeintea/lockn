@@ -2,8 +2,16 @@ import { createHash } from "node:crypto"
 import { ShortSnowflakeService } from "@common/utils"
 import { removeNullOrUndefined } from "@lockn/shared"
 import { Body, Controller, Get, Post, Query } from "@nestjs/common"
+import { ApiBody } from "@nestjs/swagger"
 import { nanoid } from "nanoid"
-import type { CreateUserDto, UpdatePasswordDto, UpdateUserDto, UserUpdate } from "./user.dto"
+import z from "zod"
+import {
+  type CreateUserDto,
+  type UpdatePasswordDto,
+  UpdatePasswordSchema,
+  type UpdateUserDto,
+  type UserUpdate,
+} from "./user.dto"
 import { UserService } from "./user.service"
 
 @Controller("sys/user")
@@ -60,6 +68,7 @@ export class UserController {
   }
 
   @Post("update/password")
+  @ApiBody({ type: JSON.stringify(z.toJSONSchema(UpdatePasswordSchema)) })
   async updatePassword(@Body() updatePasswordDto: UpdatePasswordDto) {
     const user = await this.userService.find(updatePasswordDto.userId, true)
     if (!user) throw Error("查询用户失败")
