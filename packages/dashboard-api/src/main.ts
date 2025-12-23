@@ -1,5 +1,6 @@
 import { NestFactory } from "@nestjs/core"
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger"
+import { cleanupOpenApiDoc } from "nestjs-zod"
 import { TransformResponseInterceptor } from "@/common/interceptors"
 import { AppModule } from "./app.module"
 
@@ -10,11 +11,12 @@ async function bootstrap() {
   const port = process.env.PORT ?? 3000
 
   const config = new DocumentBuilder()
-    .setTitle("Lockn Dashboard API")
-    .setDescription("The Lockn Dashboard API description")
+    .setTitle("Dashboard API")
+    .setDescription("The Dashboard API description")
     .setVersion("1.0")
     .build()
-  const documentFactory = () => SwaggerModule.createDocument(app, config)
+
+  const documentFactory = cleanupOpenApiDoc(SwaggerModule.createDocument(app, config))
   SwaggerModule.setup("swagger", app, documentFactory, {
     jsonDocumentUrl: "swagger/json",
   })
