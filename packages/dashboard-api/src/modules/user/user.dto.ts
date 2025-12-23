@@ -1,35 +1,70 @@
 import type { User, UserInsert } from "@database/mysql"
+import { createZodDto } from "nestjs-zod"
 import { z } from "zod"
 
 const shape = {
-  username: z.string().min(6).max(30),
-  password: z.string().max(32),
-  deptId: z.number(),
-  email: z.email().nullish(),
-  phone: z.string().nullish(),
+  userId: z.string().length(32).describe("用户ID"),
+  username: z.string().min(6).max(30).describe("用户名"),
+  password: z.string().min(6).max(100).describe("密码"),
+  salt: z.string().length(16).describe("盐"),
+  deptId: z.number().describe("部门ID"),
+  email: z.email().describe("邮箱"),
+  phone: z.string().describe("手机号"),
+  isDisabled: z.union([z.literal(0), z.literal(1)]).describe("是否禁用"),
+  isDeleted: z.union([z.literal(0), z.literal(1)]).describe("是否删除"),
+  createTime: z.iso.datetime().describe("创建时间"),
+  updateTime: z.iso.datetime().describe("更新时间"),
 } satisfies z.ZodRawShape
 
-export const CreateUserSchema = z.object(shape)
+const createUserSchema = z
+  .object({
+    username: shape.username,
+    password: shape.password,
+    deptId: shape.deptId,
+    email: shape.email.optional(),
+    phone: shape.phone.optional(),
+  })
+  .meta({ id: "新增用户" })
 
-export const UpdateUserSchema = z.object({
-  userId: z.string(),
-  username: shape.username.nullish(),
-  deptId: shape.deptId.nullish(),
-  email: shape.email.nullish(),
-  phone: shape.phone.nullish(),
-  isDisabled: z.union([z.literal(0), z.literal(1)]).nullish(),
-  isDeleted: z.union([z.literal(0), z.literal(1)]).nullable(),
-})
+const updateUserSchema = z
+  .object({
+    userId: shape.userId,
+    username: shape.username.optional(),
+    deptId: shape.deptId.optional(),
+    email: shape.email.optional(),
+    phone: shape.phone.optional(),
+  })
+  .meta({ id: "更新用户信息" })
 
-export const UpdatePasswordSchema = z.object({
-  userId: z.string(),
-  oldPassword: shape.password,
-  newPassword: shape.password,
-})
+const updateUserPwdSchema = z
+  .object({
+    userId: shape.userId,
+    oldPassword: shape.password.describe("旧密码"),
+    newPassword: shape.password.describe("新密码"),
+  })
+  .meta({ id: "更新密码" })
 
-export type CreateUserDto = z.infer<typeof CreateUserSchema>
-export type UpdateUserDto = z.infer<typeof UpdateUserSchema>
-export type UpdatePasswordDto = z.infer<typeof UpdatePasswordSchema>
+const resetUserPwdSchema = z
+  .object({
+    userId: shape.userId,
+    newPassword: shape.password.describe("新密码"),
+  })
+  .meta({ id: "重置密码" })
+
+export class CreateUserDto extends createZodDto(createUserSchema) {}
+export class UpdateUserDto extends createZodDto(updateUserSchema) {}
+export class UpdateUserPwdDto extends createZodDto(updateUserPwdSchema) {}
+export class ResetUserPwdDto extends createZodDto(resetUserPwdSchema) {}
+
+const userResponseSchema = createUserSchema
+  .extend({
+    userId: shape.userId,
+    password: shape.password.optional(),
+    salt: shape.salt.optional(),
+  })
+  .meta({ id: "用户响应类型" })
+
+export class UserResponseDto extends createZodDto(userResponseSchema) {}
 
 export type { User, UserInsert }
 export type UserUpdate = Omit<User, "createTime" | "updateTime">
