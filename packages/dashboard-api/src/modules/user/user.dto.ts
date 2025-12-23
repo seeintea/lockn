@@ -1,4 +1,3 @@
-import type { User, UserInsert } from "@database/mysql"
 import { createZodDto } from "nestjs-zod"
 import { z } from "zod"
 
@@ -10,11 +9,51 @@ const shape = {
   deptId: z.number().describe("部门ID"),
   email: z.email().describe("邮箱"),
   phone: z.string().describe("手机号"),
-  isDisabled: z.union([z.literal(0), z.literal(1)]).describe("是否禁用"),
-  isDeleted: z.union([z.literal(0), z.literal(1)]).describe("是否删除"),
+  isDisabled: z.number().min(0).max(1).describe("是否禁用"),
+  isDeleted: z.number().min(0).max(1).describe("是否删除"),
   createTime: z.iso.datetime().describe("创建时间"),
   updateTime: z.iso.datetime().describe("更新时间"),
 } satisfies z.ZodRawShape
+
+const userResponseSchema = z
+  .object({
+    userId: shape.userId,
+    username: shape.username,
+    deptId: shape.deptId,
+    email: shape.email,
+    phone: shape.phone,
+    isDisabled: shape.isDisabled,
+    isDeleted: shape.isDeleted,
+  })
+  .meta({ id: "用户响应类型" })
+
+const userWithPwdResponseSchema = userResponseSchema
+  .extend({
+    password: shape.password,
+    salt: shape.salt,
+  })
+  .meta({ id: "用户响应类型（包含密码）" })
+
+const updateUserServiceSchema = z
+  .object({
+    userId: shape.userId,
+    username: shape.username,
+    password: shape.password,
+    salt: shape.salt,
+    deptId: shape.deptId,
+    email: shape.email.optional(),
+    phone: shape.phone.optional(),
+    isDisabled: shape.isDisabled,
+    isDeleted: shape.isDeleted,
+  })
+  .meta({ id: "更新用户(service层)" })
+
+export class UserResponseDto extends createZodDto(userResponseSchema) {}
+export class UserWithPwdResponseDto extends createZodDto(userWithPwdResponseSchema) {}
+
+export type User = z.infer<typeof userResponseSchema>
+export type UserWithPwd = z.infer<typeof userWithPwdResponseSchema>
+export type UpdateUser = z.infer<typeof updateUserServiceSchema>
 
 const createUserSchema = z
   .object({
@@ -55,16 +94,3 @@ export class CreateUserDto extends createZodDto(createUserSchema) {}
 export class UpdateUserDto extends createZodDto(updateUserSchema) {}
 export class UpdateUserPwdDto extends createZodDto(updateUserPwdSchema) {}
 export class ResetUserPwdDto extends createZodDto(resetUserPwdSchema) {}
-
-const userResponseSchema = createUserSchema
-  .extend({
-    userId: shape.userId,
-    password: shape.password.optional(),
-    salt: shape.salt.optional(),
-  })
-  .meta({ id: "用户响应类型" })
-
-export class UserResponseDto extends createZodDto(userResponseSchema) {}
-
-export type { User, UserInsert }
-export type UserUpdate = Omit<User, "createTime" | "updateTime">

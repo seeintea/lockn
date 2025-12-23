@@ -1,7 +1,7 @@
 import { MYSQL_TOKEN, type MySqlDatabase, mysqlSchema } from "@database"
 import { Inject, Injectable, Logger } from "@nestjs/common"
 import { and, eq } from "drizzle-orm"
-import type { User, UserInsert, UserUpdate } from "./user.dto"
+import type { UpdateUser, User, UserWithPwd } from "./user.dto"
 
 const { user: userSchema } = mysqlSchema
 
@@ -10,7 +10,9 @@ export class UserService {
   private readonly logger = new Logger(UserService.name)
   constructor(@Inject(MYSQL_TOKEN) private readonly db: MySqlDatabase) {}
 
-  async find(userId: User["userId"], withPassword = false) {
+  async find(userId: User["userId"]): Promise<User>
+  async find(userId: User["userId"], withPwd: boolean): Promise<UserWithPwd>
+  async find(userId: User["userId"], withPwd = false) {
     this.logger.log(`find user ${userId}`)
     const users = await this.db
       .select({
@@ -21,25 +23,20 @@ export class UserService {
         phone: userSchema.phone,
         isDeleted: userSchema.isDeleted,
         isDisabled: userSchema.isDisabled,
-        ...(withPassword
-          ? {
-              password: userSchema.password,
-              salt: userSchema.salt,
-            }
-          : {}),
+        ...(withPwd ? { password: userSchema.password, salt: userSchema.salt } : {}),
       })
       .from(userSchema)
       .where(and(eq(userSchema.userId, userId), eq(userSchema.isDeleted, 0)))
-    return users[0] || null
+    return users[0]
   }
 
-  async create(insertUser: UserInsert) {
-    await this.db.insert(userSchema).values(insertUser)
-    const user = await this.find(insertUser.userId)
-    return user || null
+  async create(updateUser: UpdateUser) {
+    await this.db.insert(userSchema).values(updateUser)
+    const user = await this.find(updateUser.userId)
+    return user
   }
 
-  async update(updateUser: UserUpdate) {
+  async update(updateUser: UpdateUser) {
     await this.db.update(userSchema).set(updateUser).where(eq(userSchema.userId, updateUser.userId))
     return this.find(updateUser.userId)
   }

@@ -4,14 +4,7 @@ import { Body, Controller, Get, Post, Query } from "@nestjs/common"
 import { ApiTags } from "@nestjs/swagger"
 import { nanoid } from "nanoid"
 import { ZodResponse } from "nestjs-zod"
-import {
-  CreateUserDto,
-  ResetUserPwdDto,
-  UpdateUserDto,
-  UpdateUserPwdDto,
-  UserResponseDto,
-  UserUpdate,
-} from "./user.dto"
+import { CreateUserDto, ResetUserPwdDto, UpdateUserDto, UpdateUserPwdDto, UserResponseDto } from "./user.dto"
 import { UserService } from "./user.service"
 
 @ApiTags("用户")
@@ -62,7 +55,7 @@ export class UserController {
     type: UserResponseDto,
   })
   async update(@Body() updateUserDto: UpdateUserDto) {
-    const user = this.userService.find(updateUserDto.userId as string, true) as unknown as UserUpdate
+    const user = await this.userService.find(updateUserDto.userId as string, true)
     Object.assign(user, updateUserDto)
     return this.userService.update(user)
   }
@@ -96,17 +89,17 @@ export class UserController {
 
   @Get("delete")
   async delete(@Query("userId") userId: string) {
-    const user = await this.userService.find(userId, false)
+    const user = await this.userService.find(userId, true)
     if (!user) return true
     user.isDeleted = 1
-    const next = await this.userService.update(user as unknown as UserUpdate)
+    const next = await this.userService.update(user)
     return !next
   }
 
   @Get("update/enable")
   async enable(@Query("userId") userId: string) {
-    const user = await this.userService.find(userId)
+    const user = await this.userService.find(userId, true)
     user.isDisabled = user.isDeleted === 1 ? 0 : 1
-    await this.userService.update(user as unknown as UserUpdate)
+    await this.userService.update(user)
   }
 }

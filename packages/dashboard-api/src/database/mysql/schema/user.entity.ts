@@ -23,6 +23,3 @@ export const user = mysqlTable(
   },
   (table) => [uniqueIndex("username").on(table.username), index("idx_dept_id").on(table.deptId)],
 )
-
-export type User = typeof user.$inferSelect
-export type UserInsert = typeof user.$inferInsert

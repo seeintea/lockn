@@ -5,5 +5,3 @@ import { type Schema as MysqlSchema, schema as mysqlSchema } from "./schema"
 
 export { MysqlModule, MysqlProvider, MYSQL_TOKEN, MysqlService, mysqlSchema }
 export type { MysqlSchema, MySqlDatabase }
-
-export * from "./schema/types"
