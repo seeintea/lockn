@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "exports": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
   "keywords": [],
@@ -14,7 +15,7 @@
     "build": "tsdown --platform neutral"
   },
   "devDependencies": {
-    "@rolldown/binding-darwin-x64": "1.0.0-beta.54",
-    "tsdown": "^0.17.3"
+    "@rolldown/binding-darwin-x64": "1.0.0-beta.57",
+    "tsdown": "^0.18.2"
   }
 }

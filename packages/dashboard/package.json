@@ -2,6 +2,7 @@
   "name": "@goi/dashboard",
   "version": "0.0.1",
   "description": "",
+  "type": "module",
   "main": "index.js",
   "keywords": [],
   "author": "leviegu <leviegu@gmail.com>",
@@ -15,10 +16,10 @@
     "@goi/shared": "workspace:*",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "react-router": "^7.10.1"
+    "react-router": "^7.11.0"
   },
   "devDependencies": {
-    "@rsbuild/core": "^1.6.14",
+    "@rsbuild/core": "^1.6.15",
     "@rsbuild/plugin-babel": "^1.0.6",
     "@rsbuild/plugin-react": "^1.4.2",
     "@tailwindcss/postcss": "^4.1.18",

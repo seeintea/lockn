@@ -1,6 +1,7 @@
 import { defineConfig } from "@rsbuild/core"
 import { pluginBabel } from "@rsbuild/plugin-babel"
 import { pluginReact } from "@rsbuild/plugin-react"
+import tailwindcss from "@tailwindcss/postcss"
 
 export default defineConfig({
   plugins: [
@@ -14,7 +15,7 @@ export default defineConfig({
   ],
   tools: {
     postcss: (_, { addPlugins }) => {
-      addPlugins(require("@tailwindcss/postcss"))
+      addPlugins(tailwindcss)
     },
   },
 })
