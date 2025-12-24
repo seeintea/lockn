@@ -36,7 +36,7 @@ importers:
 
   packages/dashboard:
     dependencies:
-      '@lockn/shared':
+      '@goi/shared':
         specifier: workspace:*
         version: link:../shared
       react:
@@ -76,7 +76,7 @@ importers:
 
   packages/dashboard-api:
     dependencies:
-      '@lockn/shared':
+      '@goi/shared':
         specifier: workspace:*
         version: link:../shared
       '@nestjs/common':

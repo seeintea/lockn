@@ -1,5 +1,5 @@
 {
-  "name": "@lockn/dashboard-api",
+  "name": "@goi/dashboard-api",
   "version": "0.0.1",
   "description": "",
   "main": "index.js",
@@ -17,7 +17,7 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@lockn/shared": "workspace:*",
+    "@goi/shared": "workspace:*",
     "@nestjs/common": "^11.1.9",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.1.9",

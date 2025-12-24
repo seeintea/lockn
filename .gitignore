@@ -31,5 +31,5 @@ dist-ssr
 # system file ignore
 .DS_Store
 
-# @lockn/dashboard-api
+# @goi/dashboard-api
 **/migrations/*

@@ -1,5 +1,5 @@
 {
-  "name": "@lockn/dashboard",
+  "name": "@goi/dashboard",
   "version": "0.0.1",
   "description": "",
   "main": "index.js",
@@ -12,7 +12,7 @@
     "build": "rsbuild build"
   },
   "dependencies": {
-    "@lockn/shared": "workspace:*",
+    "@goi/shared": "workspace:*",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-router": "^7.10.1"
