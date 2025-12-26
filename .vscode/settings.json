@@ -1,5 +1,5 @@
 {
-  "cSpell.words": ["lockn", "rsbuild", "tinyint"],
+  "cSpell.words": ["goi", "rsbuild", "tinyint", "rspack"],
   "editor.formatOnSave": true,
   "[typescript]": {
     "editor.defaultFormatter": "prettier.prettier-vscode"

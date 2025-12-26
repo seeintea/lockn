@@ -10,5 +10,10 @@
       "react": "recommended",
       "next": "recommended"
     }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
   }
 }
