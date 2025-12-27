@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto"
 import { ShortSnowflakeService } from "@common/utils"
 import { Body, Controller, Get, Post, Query } from "@nestjs/common"
-import { ApiTags } from "@nestjs/swagger"
+import { ApiOperation, ApiTags } from "@nestjs/swagger"
 import { nanoid } from "nanoid"
 import { ZodResponse } from "nestjs-zod"
 import { CreateUserDto, ResetUserPwdDto, UpdateUserDto, UpdateUserPwdDto, UserResponseDto } from "./user.dto"
@@ -25,6 +25,7 @@ export class UserController {
   }
 
   @Post("create")
+  @ApiOperation({ summary: "创建用户" })
   @ZodResponse({
     type: UserResponseDto,
   })
@@ -43,6 +44,7 @@ export class UserController {
   }
 
   @Get("find")
+  @ApiOperation({ summary: "查找用户" })
   @ZodResponse({
     type: UserResponseDto,
   })
@@ -51,6 +53,7 @@ export class UserController {
   }
 
   @Post("update")
+  @ApiOperation({ summary: "更新用户" })
   @ZodResponse({
     type: UserResponseDto,
   })
@@ -61,6 +64,7 @@ export class UserController {
   }
 
   @Post("update/password")
+  @ApiOperation({ summary: "更新密码" })
   async updatePassword(@Body() updateUserPwdDto: UpdateUserPwdDto) {
     const user = await this.userService.find(updateUserPwdDto.userId, true)
     if (!user) throw Error("查询用户失败")
@@ -76,6 +80,7 @@ export class UserController {
   }
 
   @Post("update/password/reset")
+  @ApiOperation({ summary: "重置密码" })
   async resetPassword(@Body() resetUserPwdDto: ResetUserPwdDto) {
     const user = await this.userService.find(resetUserPwdDto.userId)
     if (!user) throw Error("查询用户失败")
@@ -88,6 +93,7 @@ export class UserController {
   }
 
   @Get("delete")
+  @ApiOperation({ summary: "删除用户" })
   async delete(@Query("userId") userId: string) {
     const user = await this.userService.find(userId, true)
     if (!user) return true
@@ -97,6 +103,7 @@ export class UserController {
   }
 
   @Get("update/enable")
+  @ApiOperation({ summary: "启用/禁用用户" })
   async enable(@Query("userId") userId: string) {
     const user = await this.userService.find(userId, true)
     user.isDisabled = user.isDeleted === 1 ? 0 : 1

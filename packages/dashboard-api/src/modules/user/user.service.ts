@@ -18,7 +18,6 @@ export class UserService {
       .select({
         userId: userSchema.userId,
         username: userSchema.username,
-        deptId: userSchema.deptId,
         email: userSchema.email,
         phone: userSchema.phone,
         isDeleted: userSchema.isDeleted,
@@ -27,6 +26,23 @@ export class UserService {
       })
       .from(userSchema)
       .where(and(eq(userSchema.userId, userId), eq(userSchema.isDeleted, 0)))
+    return users[0]
+  }
+
+  async findByUsername(username: User["username"]): Promise<UserWithPwd> {
+    const users = await this.db
+      .select({
+        userId: userSchema.userId,
+        username: userSchema.username,
+        email: userSchema.email,
+        phone: userSchema.phone,
+        isDeleted: userSchema.isDeleted,
+        isDisabled: userSchema.isDisabled,
+        password: userSchema.password,
+        salt: userSchema.salt,
+      })
+      .from(userSchema)
+      .where(and(eq(userSchema.username, username), eq(userSchema.isDeleted, 0)))
     return users[0]
   }
 

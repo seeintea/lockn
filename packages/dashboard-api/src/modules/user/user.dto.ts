@@ -6,7 +6,6 @@ const shape = {
   username: z.string().min(6).max(30).describe("用户名"),
   password: z.string().min(6).max(100).describe("密码"),
   salt: z.string().length(16).describe("盐"),
-  deptId: z.number().describe("部门ID"),
   email: z.email().describe("邮箱"),
   phone: z.string().describe("手机号"),
   isDisabled: z.number().min(0).max(1).describe("是否禁用"),
@@ -19,7 +18,6 @@ const userResponseSchema = z
   .object({
     userId: shape.userId,
     username: shape.username,
-    deptId: shape.deptId,
     email: shape.email,
     phone: shape.phone,
     isDisabled: shape.isDisabled,
@@ -40,7 +38,6 @@ const updateUserServiceSchema = z
     username: shape.username,
     password: shape.password,
     salt: shape.salt,
-    deptId: shape.deptId,
     email: shape.email.optional(),
     phone: shape.phone.optional(),
     isDisabled: shape.isDisabled,
@@ -59,7 +56,6 @@ const createUserSchema = z
   .object({
     username: shape.username,
     password: shape.password,
-    deptId: shape.deptId,
     email: shape.email.optional(),
     phone: shape.phone.optional(),
   })
@@ -69,7 +65,6 @@ const updateUserSchema = z
   .object({
     userId: shape.userId,
     username: shape.username.optional(),
-    deptId: shape.deptId.optional(),
     email: shape.email.optional(),
     phone: shape.phone.optional(),
   })
