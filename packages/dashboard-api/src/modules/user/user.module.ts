@@ -1,4 +1,4 @@
-import { ShortSnowflakeService } from "@common/utils"
+import { SnowflakeService } from "@common/utils"
 import { Module } from "@nestjs/common"
 import { UserController } from "./user.controller"
 import { UserService } from "./user.service"
@@ -6,6 +6,7 @@ import { UserService } from "./user.service"
 @Module({
   imports: [],
   controllers: [UserController],
-  providers: [UserService, ShortSnowflakeService],
+  providers: [UserService, SnowflakeService],
+  exports: [UserService],
 })
 export class UserModule {}

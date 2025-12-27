@@ -1,1 +1,1 @@
-export * from "./short-snowflake.service"
+export * from "./snowflake.service"

@@ -1,4 +1,4 @@
-import { UserService } from "@modules/user/user.service"
+import { UserModule } from "@modules/user/user.module"
 import { Module } from "@nestjs/common"
 import { JwtModule } from "@nestjs/jwt"
 import { AuthController } from "./auth.controller"
@@ -10,8 +10,9 @@ import { AuthController } from "./auth.controller"
       secret: process.env.JWT_SECRET || "default_secret_key",
       signOptions: { expiresIn: `${60 * 60 * 24 * 7}s` },
     }),
+    UserModule,
   ],
   controllers: [AuthController],
-  providers: [UserService],
+  providers: [],
 })
 export class AuthModule {}

@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto"
-import { ShortSnowflakeService } from "@common/utils"
+import { SnowflakeService } from "@common/utils"
 import { Body, Controller, Get, Post, Query } from "@nestjs/common"
 import { ApiOperation, ApiTags } from "@nestjs/swagger"
 import { nanoid } from "nanoid"
@@ -12,7 +12,7 @@ import { UserService } from "./user.service"
 export class UserController {
   constructor(
     private readonly userService: UserService,
-    private readonly snowflakeService: ShortSnowflakeService,
+    private readonly snowflakeService: SnowflakeService,
   ) {}
 
   generateSaltAndPassword(originPassword: string, salt?: string) {
@@ -38,7 +38,7 @@ export class UserController {
       password,
       isDisabled: 0,
       isDeleted: 0,
-      userId: this.snowflakeService.nextId(),
+      userId: this.snowflakeService.id(),
     })
     return user
   }
