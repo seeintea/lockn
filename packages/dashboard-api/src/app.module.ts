@@ -1,13 +1,21 @@
 import { SnowflakeService } from "@common/utils"
-import { MysqlModule } from "@database"
+import { MysqlModule, RedisModule } from "@database"
 import { AuthModule, UserModule } from "@modules"
 import { Module } from "@nestjs/common"
 import { ConfigModule } from "@nestjs/config"
+import { APP_GUARD } from "@nestjs/core"
+import { AuthGuard } from "@/common/guards/auth.guard"
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), MysqlModule, UserModule, AuthModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), MysqlModule, RedisModule, UserModule, AuthModule],
   controllers: [],
-  providers: [SnowflakeService],
+  providers: [
+    SnowflakeService,
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+  ],
   exports: [SnowflakeService],
 })
 export class AppModule {}
