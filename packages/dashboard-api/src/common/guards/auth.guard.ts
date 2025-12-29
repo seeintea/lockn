@@ -29,24 +29,16 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      const payload = await this.jwtService.verifyAsync(token, {
+      await this.jwtService.verifyAsync(token, {
         secret: process.env.JWT_SECRET || "default_secret_key",
       })
-
-      console.log("payload", payload)
-
-      const redisKey = `auth:token:${payload.id}`
-      const cachedToken = await this.redisService.get(redisKey)
-
-      console.log("cachedToken", cachedToken)
-
-      if (!cachedToken || cachedToken !== token) {
+      const redisKey = `auth:token:${token}`
+      const cachedUserInfo = await this.redisService.get(redisKey)
+      if (!cachedUserInfo) {
         throw new UnauthorizedException("Token invalid or expired")
       }
-
-      request.user = payload
-    } catch (error) {
-      console.log(error)
+      request.user = JSON.parse(cachedUserInfo)
+    } catch {
       throw new UnauthorizedException()
     }
     return true
