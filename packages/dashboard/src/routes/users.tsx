@@ -1,13 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router"
-import { Login } from "@/features/Login"
+import { Users } from "@/features/Users"
 
-export const Route = createFileRoute("/login")({
+export const Route = createFileRoute("/users")({
   component: RouteComponent,
   staticData: {
-    title: "登录",
+    title: "用户列表",
   },
 })
 
 function RouteComponent() {
-  return <Login />
+  return <Users />
 }

@@ -1,7 +1,6 @@
-import { ElementType, memo } from "react"
-import { AnimatePresence, motion, MotionProps, Variants } from "motion/react"
-
-import { cn } from "@utils/css"
+import { AnimatePresence, type MotionProps, motion, type Variants } from "motion/react"
+import { type ElementType, memo } from "react"
+import { cn } from "@/utils/css"
 
 type AnimationType = "text" | "word" | "character" | "line"
 type AnimationVariant =
@@ -102,10 +101,7 @@ const defaultItemVariants: Variants = {
   },
 }
 
-const defaultItemAnimationVariants: Record<
-  AnimationVariant,
-  { container: Variants; item: Variants }
-> = {
+const defaultItemAnimationVariants: Record<AnimationVariant, { container: Variants; item: Variants }> = {
   fadeIn: {
     container: defaultContainerVariants,
     item: {
@@ -395,13 +391,14 @@ const TextAnimateBase = ({
         {accessible && <span className="sr-only">{children}</span>}
         {segments.map((segment, i) => (
           <motion.span
+            // biome-ignore lint/suspicious/noArrayIndexKey: <"">
             key={`${by}-${segment}-${i}`}
             variants={finalVariants.item}
             custom={i * staggerTimings[by]}
             className={cn(
               by === "line" ? "block" : "inline-block whitespace-pre",
               by === "character" && "",
-              segmentClassName
+              segmentClassName,
             )}
             aria-hidden={accessible ? true : undefined}
           >
