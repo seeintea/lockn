@@ -1,14 +1,17 @@
-import { Button } from "@components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@components/ui/card"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@components/ui/form"
-import { Input } from "@components/ui/input"
-import { TextAnimate } from "@components/ui/text-animate"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useNavigate } from "@tanstack/react-router"
 import { Eye, EyeOff } from "lucide-react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import z from "zod"
+import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { TextAnimate } from "@/components/ui/text-animate"
+import { useLogin } from "@/hooks/queries"
 
 const loginSchema = z.object({
   username: z.string().nonempty({ message: "请输入用户名" }),
@@ -16,6 +19,9 @@ const loginSchema = z.object({
 })
 
 export function Login() {
+  const { mutateAsync } = useLogin()
+  const navigate = useNavigate()
+
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -30,17 +36,25 @@ export function Login() {
     setShowPassword(!showPassword)
   }
 
-  const onSubmit = (data: z.infer<typeof loginSchema>) => {
-    console.log(data)
-    toast.success("登录成功")
+  const onSubmit = async (form: z.infer<typeof loginSchema>) => {
+    const resp = await mutateAsync(form)
+    if (resp.code === 200) {
+      toast.success("登录成功！")
+      navigate({
+        to: "/users",
+      })
+    } else {
+      toast.error(resp.message)
+    }
   }
 
   return (
     <div
       className={
-        "absolute bottom-0 left-0 right-0 top-0 bg-[radial-gradient(circle_500px_at_50%_200px,#C9EBFF,transparent)]"
+        "absolute bottom-0 left-0 right-0 top-0 bg-[radial-gradient(circle_500px_at_50%_200px,#C9EBFF,transparent)] dark:bg-[radial-gradient(circle_500px_at_50%_200px,#3e3e3e,transparent)]"
       }
     >
+      <AnimatedThemeToggler className={"absolute right-8 top-4"} />
       <div className={"flex flex-col items-center justify-center h-[80vh] gap-4"}>
         <TextAnimate
           animation="blurInUp"

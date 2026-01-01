@@ -31,4 +31,7 @@ export default defineConfig({
     mountId: "app",
     title: "Dashboard",
   },
+  server: {
+    port: 5721,
+  },
 })

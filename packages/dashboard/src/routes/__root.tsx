@@ -1,9 +1,12 @@
-import { createRootRoute, Outlet, useMatches } from "@tanstack/react-router"
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
-import { useEffect } from "react"
-import { Toaster } from "@/components/ui/sonner"
+import type { QueryClient } from "@tanstack/react-query"
+import { createRootRouteWithContext } from "@tanstack/react-router"
+import { Layout } from "@/layout"
 
-export const Route = createRootRoute({
+export interface RouterContext {
+  queryClient: QueryClient
+}
+
+export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,
   staticData: {
     title: "",
@@ -11,23 +14,5 @@ export const Route = createRootRoute({
 })
 
 function RootComponent() {
-  const matches = useMatches()
-
-  useEffect(() => {
-    const current = matches.at(-1)
-    if (current?.staticData.title) {
-      document.title = `${current.staticData.title} - Dashboard`
-    }
-  }, [matches])
-
-  return (
-    <>
-      <Outlet />
-      <Toaster position="top-center" />
-      <TanStackRouterDevtools
-        initialIsOpen={false}
-        position="bottom-right"
-      />
-    </>
-  )
+  return <Layout />
 }

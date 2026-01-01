@@ -1,5 +1,5 @@
 {
-  "cSpell.words": ["goi", "rsbuild", "tinyint", "rspack"],
+  "cSpell.words": ["goi", "rsbuild", "tinyint", "rspack", "rsdoctor", "magicui"],
   "editor.formatOnSave": true,
   "[typescript]": {
     "editor.defaultFormatter": "prettier.prettier-vscode"
