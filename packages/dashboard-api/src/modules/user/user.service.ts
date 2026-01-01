@@ -1,6 +1,6 @@
-import { MYSQL_TOKEN, type MySqlDatabase, mysqlSchema } from "@database"
 import { Inject, Injectable, Logger } from "@nestjs/common"
 import { and, eq } from "drizzle-orm"
+import { MYSQL_TOKEN, type MySqlDatabase, mysqlSchema } from "@/database"
 import type { UpdateUser, User, UserWithPwd } from "./user.dto"
 
 const { user: userSchema } = mysqlSchema

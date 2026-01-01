@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto"
-import { SnowflakeService } from "@common/utils"
 import { Body, Controller, Get, Post, Query } from "@nestjs/common"
 import { ApiOperation, ApiTags } from "@nestjs/swagger"
 import { nanoid } from "nanoid"
 import { ZodResponse } from "nestjs-zod"
+import { SnowflakeService } from "@/common/utils"
 import { CreateUserDto, ResetUserPwdDto, UpdateUserDto, UpdateUserPwdDto, UserResponseDto } from "./user.dto"
 import { UserService } from "./user.service"
 

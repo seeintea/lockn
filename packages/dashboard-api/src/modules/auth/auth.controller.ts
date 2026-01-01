@@ -1,11 +1,11 @@
 import { createHash } from "node:crypto"
-import { BusinessException } from "@common/exceptions"
-import { RedisService } from "@database"
-import { UserService } from "@modules/user/user.service"
 import { Body, Controller, Post } from "@nestjs/common"
 import { JwtService } from "@nestjs/jwt"
 import { ApiTags } from "@nestjs/swagger"
 import { Public } from "@/common/decorators/public.decorator"
+import { BusinessException } from "@/common/exceptions"
+import { RedisService } from "@/database"
+import { UserService } from "@/modules/user/user.service"
 import { LoginDto, LoginResponse } from "./auth.dto"
 
 @ApiTags("授权")
