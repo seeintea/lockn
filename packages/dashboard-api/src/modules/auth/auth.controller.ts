@@ -1,13 +1,14 @@
 import { Body, Controller, Post } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 import { JwtService } from "@nestjs/jwt"
-import { ApiTags } from "@nestjs/swagger"
+import { ApiOperation, ApiTags } from "@nestjs/swagger"
+import { ZodResponse } from "nestjs-zod"
 import { Public } from "@/common/decorators/public.decorator"
 import { BusinessException } from "@/common/exceptions/business.exception"
 import { RedisService } from "@/database"
 import { getSaltAndPassword } from "@/helper/password"
 import { UserService } from "@/modules/user/user.service"
-import { LoginDto, LoginResponse } from "./auth.dto"
+import { LoginDto, LoginResponseDto } from "./auth.dto"
 
 @ApiTags("授权")
 @Controller("sys/auth")
@@ -21,11 +22,15 @@ export class AuthController {
 
   @Public()
   @Post("login")
-  async login(@Body() loginDto: LoginDto): Promise<LoginResponse> {
+  @ApiOperation({ summary: "用户登录" })
+  @ZodResponse({
+    type: LoginResponseDto,
+  })
+  async login(@Body() loginDto: LoginDto): Promise<LoginResponseDto> {
     const user = await this.userService.findByUsername(loginDto.username)
     if (!user) throw new BusinessException("用户名或密码错误，请重试")
     const { salt, password } = user
-    const [_, userInputPwd] = getSaltAndPassword(password, salt)
+    const [_, userInputPwd] = getSaltAndPassword(loginDto.password, salt)
     if (userInputPwd !== password) throw new BusinessException("用户名或密码错误，请重试")
 
     const payload = { id: user.userId }

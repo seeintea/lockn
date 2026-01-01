@@ -1,8 +1,9 @@
 import { Inject, Injectable, Logger } from "@nestjs/common"
-import { and, eq } from "drizzle-orm"
+import { and, count, eq, like, type SQL } from "drizzle-orm"
 import { MYSQL_TOKEN } from "@/constants"
 import { type MySqlDatabase, mysqlSchema } from "@/database"
-import type { UpdateUser, User, UserWithPwd } from "./user.dto"
+import { createPaginatedData, getPaginationOptions } from "@/helper/pagination"
+import type { PaginationUserQuery, UpdateUser, User, UserPagination, UserWithPwd } from "./user.dto"
 
 const { user: userSchema } = mysqlSchema
 
@@ -58,5 +59,35 @@ export class UserService {
     return this.find(updateUser.userId)
   }
 
-  async list() {}
+  async list(params: PaginationUserQuery): Promise<UserPagination> {
+    const eqItems: SQL<unknown>[] = [eq(userSchema.isDeleted, 0)]
+    if (params.userId) {
+      eqItems.push(eq(userSchema.userId, params.userId))
+    }
+    if (params.username) {
+      eqItems.push(like(userSchema.username, `%${params.username}%`))
+    }
+    const counts = await this.db
+      .select({ count: count() })
+      .from(userSchema)
+      .where(and(...eqItems))
+    const total = counts[0].count
+
+    const { limit, offset, page, pageSize } = getPaginationOptions(params)
+    const users = await this.db
+      .select({
+        userId: userSchema.userId,
+        username: userSchema.username,
+        email: userSchema.email,
+        phone: userSchema.phone,
+        isDeleted: userSchema.isDeleted,
+        isDisabled: userSchema.isDisabled,
+      })
+      .from(userSchema)
+      .where(and(...eqItems))
+      .limit(limit)
+      .offset(offset)
+
+    return createPaginatedData(users, total, page, pageSize)
+  }
 }

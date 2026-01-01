@@ -1,5 +1,6 @@
 import { createZodDto } from "nestjs-zod"
 import { z } from "zod"
+import { paginationDataSchema, paginationQuerySchema } from "@/types"
 
 const shape = {
   userId: z.string().length(32).describe("用户ID"),
@@ -45,12 +46,16 @@ const updateUserServiceSchema = z
   })
   .meta({ id: "更新用户(service层)" })
 
+const paginationUserResponseSchema = paginationDataSchema(userResponseSchema)
+
 export class UserResponseDto extends createZodDto(userResponseSchema) {}
 export class UserWithPwdResponseDto extends createZodDto(userWithPwdResponseSchema) {}
+export class PaginationUserResponseDto extends createZodDto(paginationUserResponseSchema) {}
 
 export type User = z.infer<typeof userResponseSchema>
 export type UserWithPwd = z.infer<typeof userWithPwdResponseSchema>
 export type UpdateUser = z.infer<typeof updateUserServiceSchema>
+export type UserPagination = z.infer<typeof paginationUserResponseSchema>
 
 const createUserSchema = z
   .object({
@@ -85,7 +90,16 @@ const resetUserPwdSchema = z
   })
   .meta({ id: "重置密码" })
 
+const paginationUserQuerySchema = paginationQuerySchema
+  .extend({
+    userId: shape.userId.optional(),
+    username: shape.username.optional(),
+  })
+  .meta({ id: "分页查询用户" })
+
+export type PaginationUserQuery = z.infer<typeof paginationUserQuerySchema>
 export class CreateUserDto extends createZodDto(createUserSchema) {}
 export class UpdateUserDto extends createZodDto(updateUserSchema) {}
 export class UpdateUserPwdDto extends createZodDto(updateUserPwdSchema) {}
 export class ResetUserPwdDto extends createZodDto(resetUserPwdSchema) {}
+export class PaginationUserQueryDto extends createZodDto(paginationUserQuerySchema) {}

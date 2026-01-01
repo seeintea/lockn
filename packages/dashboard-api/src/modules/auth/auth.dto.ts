@@ -19,4 +19,4 @@ const loginResponseSchema = z
   })
   .meta({ id: "登录响应类型" })
 
-export type LoginResponse = z.infer<typeof loginResponseSchema>
+export class LoginResponseDto extends createZodDto(loginResponseSchema) {}

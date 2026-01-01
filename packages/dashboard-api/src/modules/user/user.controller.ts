@@ -4,7 +4,15 @@ import { ZodResponse } from "nestjs-zod"
 import { BusinessException } from "@/common/exceptions/business.exception"
 import { SnowflakeService } from "@/common/utils/snowflake.service"
 import { getSaltAndPassword } from "@/helper/password"
-import { CreateUserDto, ResetUserPwdDto, UpdateUserDto, UpdateUserPwdDto, UserResponseDto } from "./user.dto"
+import {
+  CreateUserDto,
+  PaginationUserQueryDto,
+  PaginationUserResponseDto,
+  ResetUserPwdDto,
+  UpdateUserDto,
+  UpdateUserPwdDto,
+  UserResponseDto,
+} from "./user.dto"
 import { UserService } from "./user.service"
 
 @ApiTags("用户")
@@ -41,6 +49,15 @@ export class UserController {
   })
   async find(@Query("userId") userId: string) {
     return this.userService.find(userId)
+  }
+
+  @Get("list")
+  @ApiOperation({ summary: "查询用户列表" })
+  @ZodResponse({
+    type: PaginationUserResponseDto,
+  })
+  async list(@Query() params: PaginationUserQueryDto) {
+    return this.userService.list(params)
   }
 
   @Post("update")
