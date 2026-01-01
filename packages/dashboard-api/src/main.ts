@@ -1,15 +1,11 @@
 import { NestFactory } from "@nestjs/core"
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger"
 import { cleanupOpenApiDoc } from "nestjs-zod"
-import { AllExceptionsFilter } from "@/common/filters"
-import { TransformResponseInterceptor } from "@/common/interceptors"
 import { AppModule } from "./app.module"
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
   app.setGlobalPrefix("api")
-  app.useGlobalInterceptors(new TransformResponseInterceptor())
-  app.useGlobalFilters(new AllExceptionsFilter())
 
   const port = process.env.PORT ?? 3000
 

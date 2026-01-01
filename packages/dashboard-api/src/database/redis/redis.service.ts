@@ -1,7 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common"
 import Redis from "ioredis"
-
-export const REDIS_TOKEN = Symbol("redis_token")
+import { REDIS_TOKEN } from "@/constants"
 
 @Injectable()
 export class RedisService {

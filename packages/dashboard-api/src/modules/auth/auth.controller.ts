@@ -1,10 +1,11 @@
-import { createHash } from "node:crypto"
 import { Body, Controller, Post } from "@nestjs/common"
+import { ConfigService } from "@nestjs/config"
 import { JwtService } from "@nestjs/jwt"
 import { ApiTags } from "@nestjs/swagger"
 import { Public } from "@/common/decorators/public.decorator"
-import { BusinessException } from "@/common/exceptions"
+import { BusinessException } from "@/common/exceptions/business.exception"
 import { RedisService } from "@/database"
+import { getSaltAndPassword } from "@/helper/password"
 import { UserService } from "@/modules/user/user.service"
 import { LoginDto, LoginResponse } from "./auth.dto"
 
@@ -15,6 +16,7 @@ export class AuthController {
     private readonly userService: UserService,
     private jwtService: JwtService,
     private redisService: RedisService,
+    private configService: ConfigService,
   ) {}
 
   @Public()
@@ -23,13 +25,13 @@ export class AuthController {
     const user = await this.userService.findByUsername(loginDto.username)
     if (!user) throw new BusinessException("用户名或密码错误，请重试")
     const { salt, password } = user
-    const userInputPwd = createHash("sha256").update(`${loginDto.password}${salt}`).digest("hex")
+    const [_, userInputPwd] = getSaltAndPassword(password, salt)
     if (userInputPwd !== password) throw new BusinessException("用户名或密码错误，请重试")
 
     const payload = { id: user.userId }
     const accessToken = await this.jwtService.signAsync(payload)
 
-    const EXPIRE_TIME = Number(process.env.TOKEN_EXPIRE_TIME) || 604800
+    const EXPIRE_TIME = Number(this.configService.getOrThrow<number>("TOKEN_EXPIRE_TIME"))
     const userKey = `auth:user:${user.userId}`
     const oldToken = await this.redisService.get(userKey)
     if (oldToken) {

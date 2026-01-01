@@ -1,9 +1,9 @@
-import { createHash } from "node:crypto"
 import { Body, Controller, Get, Post, Query } from "@nestjs/common"
 import { ApiOperation, ApiTags } from "@nestjs/swagger"
-import { nanoid } from "nanoid"
 import { ZodResponse } from "nestjs-zod"
-import { SnowflakeService } from "@/common/utils"
+import { BusinessException } from "@/common/exceptions/business.exception"
+import { SnowflakeService } from "@/common/utils/snowflake.service"
+import { getSaltAndPassword } from "@/helper/password"
 import { CreateUserDto, ResetUserPwdDto, UpdateUserDto, UpdateUserPwdDto, UserResponseDto } from "./user.dto"
 import { UserService } from "./user.service"
 
@@ -15,15 +15,6 @@ export class UserController {
     private readonly snowflakeService: SnowflakeService,
   ) {}
 
-  generateSaltAndPassword(originPassword: string, salt?: string) {
-    let nextSalt = salt
-    if (!nextSalt) {
-      nextSalt = nanoid(16)
-    }
-    const password = createHash("sha256").update(`${originPassword}${nextSalt}`).digest("hex")
-    return [nextSalt, password]
-  }
-
   @Post("create")
   @ApiOperation({ summary: "创建用户" })
   @ZodResponse({
@@ -31,7 +22,7 @@ export class UserController {
   })
   async create(@Body() createUserDto: CreateUserDto) {
     const { password: origin, ...other } = createUserDto
-    const [salt, password] = this.generateSaltAndPassword(origin)
+    const [salt, password] = getSaltAndPassword(origin)
     const user = await this.userService.create({
       ...other,
       salt,
@@ -67,11 +58,11 @@ export class UserController {
   @ApiOperation({ summary: "更新密码" })
   async updatePassword(@Body() updateUserPwdDto: UpdateUserPwdDto) {
     const user = await this.userService.find(updateUserPwdDto.userId, true)
-    if (!user) throw Error("查询用户失败")
+    if (!user) throw new BusinessException("查询用户失败")
     const { password, salt } = user
-    const [_, valid] = this.generateSaltAndPassword(updateUserPwdDto.oldPassword, salt)
-    if (valid !== password) throw Error("密码校验失败")
-    const [nextSalt, nextPassword] = this.generateSaltAndPassword(updateUserPwdDto.newPassword)
+    const [_, valid] = getSaltAndPassword(updateUserPwdDto.oldPassword, salt)
+    if (valid !== password) throw new BusinessException("密码校验失败")
+    const [nextSalt, nextPassword] = getSaltAndPassword(updateUserPwdDto.newPassword)
     await this.userService.update({
       ...user,
       salt: nextSalt,
@@ -83,8 +74,8 @@ export class UserController {
   @ApiOperation({ summary: "重置密码" })
   async resetPassword(@Body() resetUserPwdDto: ResetUserPwdDto) {
     const user = await this.userService.find(resetUserPwdDto.userId)
-    if (!user) throw Error("查询用户失败")
-    const [nextSalt, nextPassword] = this.generateSaltAndPassword(resetUserPwdDto.newPassword)
+    if (!user) throw new BusinessException("查询用户失败")
+    const [nextSalt, nextPassword] = getSaltAndPassword(resetUserPwdDto.newPassword)
     await this.userService.update({
       ...user,
       salt: nextSalt,

@@ -2,9 +2,9 @@ import { Provider } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 import { drizzle, type MySql2Database } from "drizzle-orm/mysql2"
 import mysql from "mysql2/promise"
+import { MYSQL_TOKEN } from "@/constants"
 import { type Schema, schema } from "./schema"
 
-export const MYSQL_TOKEN = Symbol("mysql_token")
 export type MySqlDatabase = MySql2Database<Schema>
 
 export const MysqlProvider: Provider = {

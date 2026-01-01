@@ -1,7 +1,7 @@
 import { MysqlModule } from "./mysql.module"
-import { MYSQL_TOKEN, type MySqlDatabase, MysqlProvider } from "./mysql.provider"
+import { type MySqlDatabase, MysqlProvider } from "./mysql.provider"
 import { MysqlService } from "./mysql.service"
 import { type Schema as MysqlSchema, schema as mysqlSchema } from "./schema"
 
-export { MysqlModule, MysqlProvider, MYSQL_TOKEN, MysqlService, mysqlSchema }
+export { MysqlModule, MysqlProvider, MysqlService, mysqlSchema }
 export type { MysqlSchema, MySqlDatabase }

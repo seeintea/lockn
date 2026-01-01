@@ -1,4 +1,3 @@
-
 ## 目录结构
 
 ```plaintext
@@ -50,4 +49,15 @@ src/
 └── config/                              // 配置文件（env、模块配置）
     ├── env.validation.ts                // 环境变量校验
     └── app.config.ts                    // 应用配置服务
+```
+
+# .env
+
+```
+# example
+PORT=8193
+MYSQL_DATABASE_URL="mysql://root:123456@127.0.0.1:3306/goi"
+REDIS_DATABASE_URL="redis://:123456@127.0.0.1:6379/0"
+JWT_SECRET="uIjEnNOD6nX$yDIsY%w"
+TOKEN_EXPIRE_TIME=604800
 ```

@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common"
-import { SnowflakeService } from "@/common/utils"
+import { SnowflakeService } from "@/common/utils/snowflake.service"
 import { UserController } from "./user.controller"
 import { UserService } from "./user.service"
 

@@ -1,8 +1,10 @@
 import { Module } from "@nestjs/common"
 import { ConfigModule } from "@nestjs/config"
-import { APP_GUARD } from "@nestjs/core"
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core"
+import { AllExceptionsFilter } from "@/common/filters/all-exception.filter"
 import { AuthGuard } from "@/common/guards/auth.guard"
-import { SnowflakeService } from "@/common/utils"
+import { TransformResponseInterceptor } from "@/common/interceptors/transform-response.interceptor"
+import { SnowflakeService } from "@/common/utils/snowflake.service"
 import { MysqlModule, RedisModule } from "@/database"
 import { AuthModule, UserModule } from "@/modules"
 
@@ -11,10 +13,9 @@ import { AuthModule, UserModule } from "@/modules"
   controllers: [],
   providers: [
     SnowflakeService,
-    {
-      provide: APP_GUARD,
-      useClass: AuthGuard,
-    },
+    { provide: APP_GUARD, useClass: AuthGuard },
+    { provide: APP_FILTER, useClass: AllExceptionsFilter },
+    { provide: APP_INTERCEPTOR, useClass: TransformResponseInterceptor },
   ],
   exports: [SnowflakeService],
 })

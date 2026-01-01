@@ -10,8 +10,8 @@ import { AuthController } from "./auth.controller"
       global: true,
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>("JWT_SECRET") || "default_secret_key",
-        signOptions: { expiresIn: `${configService.get<number>("TOKEN_EXPIRE_TIME") || 604800}s` },
+        secret: configService.getOrThrow<string>("JWT_SECRET"),
+        signOptions: { expiresIn: `${configService.getOrThrow<number>("TOKEN_EXPIRE_TIME")}s` },
       }),
       inject: [ConfigService],
     }),
