@@ -1,4 +1,3 @@
-import type { ApiResponse } from "@/types/response"
 import { api } from "@/utils/request"
 
 export interface LoginParams {
@@ -12,4 +11,4 @@ export interface LoginResponse {
   accessToken: string
 }
 
-export const login = (params: LoginParams) => api.post<ApiResponse<LoginResponse>>("/sys/auth/login", params)
+export const login = (params: LoginParams) => api.post<LoginResponse>("/sys/auth/login", params)

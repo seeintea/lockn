@@ -54,7 +54,7 @@ export function Login() {
         "absolute bottom-0 left-0 right-0 top-0 bg-[radial-gradient(circle_500px_at_50%_200px,#C9EBFF,transparent)] dark:bg-[radial-gradient(circle_500px_at_50%_200px,#3e3e3e,transparent)]"
       }
     >
-      <AnimatedThemeToggler className={"absolute right-8 top-4"} />
+      <AnimatedThemeToggler className={"absolute right-4 top-4"} />
       <div className={"flex flex-col items-center justify-center h-[80vh] gap-4"}>
         <TextAnimate
           animation="blurInUp"

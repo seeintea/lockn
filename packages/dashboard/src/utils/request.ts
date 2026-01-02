@@ -1,5 +1,6 @@
 import { redirect } from "@tanstack/react-router"
 import { useUser } from "@/stores/useUser"
+import type { ApiResponse } from "@/types/response"
 
 class FetchInstance {
   private baseURL: string
@@ -64,12 +65,12 @@ class FetchInstance {
     throw lastError
   }
 
-  get<T>(url: string, options?: RequestInit): Promise<T> {
-    return this.request<T>(url, { ...options, method: "GET" })
+  get<T>(url: string, options?: RequestInit): Promise<ApiResponse<T>> {
+    return this.request<ApiResponse<T>>(url, { ...options, method: "GET" })
   }
 
-  post<T>(url: string, data?: unknown, options?: RequestInit): Promise<T> {
-    return this.request<T>(url, {
+  post<T>(url: string, data?: unknown, options?: RequestInit): Promise<ApiResponse<T>> {
+    return this.request<ApiResponse<T>>(url, {
       ...options,
       method: "POST",
       headers: { "Content-Type": "application/json", ...options?.headers },

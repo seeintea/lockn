@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "@fontsource-variable/noto-sans";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -75,6 +76,7 @@
 }
 
 @theme inline {
+  --font-sans: "Noto Sans Variable", sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -118,11 +120,15 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply font-sans bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
   }
 }
 
-::view-transition-old(root), ::view-transition-new(root) {
-    animation: none;
-    mix-blend-mode: normal;
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
 }
