@@ -4,6 +4,9 @@ import { toast } from "sonner"
 export function getContext() {
   const queryClient = new QueryClient({
     defaultOptions: {
+      queries: {
+        retry: 0,
+      },
       mutations: {
         onError: (error) => {
           console.error("Mutation failed:", error)
