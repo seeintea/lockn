@@ -1,24 +1,22 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
-interface UserStore {
+interface AuthStore {
   token: string
 }
 
-interface UserAction {
+interface AuthAction {
   updateToken: (token: string) => void
 }
 
-type User = UserStore & UserAction
-
-export const useUser = create(
-  persist<User>(
+export const useAuth = create(
+  persist<AuthStore & AuthAction>(
     (set) => ({
       token: "",
       updateToken: (token) => set({ token }),
     }),
     {
-      name: "persist-user",
+      name: "persist-auth",
     },
   ),
 )

@@ -1,4 +1,3 @@
-/** biome-ignore-all lint/correctness/useExhaustiveDependencies: <shadcn> */
 "use client"
 
 import { Slot } from "@radix-ui/react-slot"

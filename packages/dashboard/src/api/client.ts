@@ -1,6 +1,10 @@
+/** biome-ignore-all lint/correctness/useHookAtTopLevel: <not react hook> */
+/** biome-ignore-all lint/suspicious/noExplicitAny: <api response type> */
+import { removeNullOrUndefined } from "@goi/shared"
 import { redirect } from "@tanstack/react-router"
-import { useUser } from "@/stores/useUser"
-import type { ApiResponse } from "@/types/response"
+import queryString from "query-string"
+import { useAuth } from "@/stores"
+import type { ApiResponse } from "@/types"
 
 class FetchInstance {
   private baseURL: string
@@ -35,7 +39,7 @@ class FetchInstance {
     const timeoutId = setTimeout(() => controller.abort(), this.timeout)
     mergedOptions.signal = controller.signal
 
-    let lastError: Error = new Error("Request failed")
+    let lastError: Error = new Error("请求失败")
 
     for (let attempt = 0; attempt <= this.retries; attempt += 1) {
       try {
@@ -54,7 +58,7 @@ class FetchInstance {
       } catch (error) {
         lastError = error as Error
         if (lastError?.name === "AbortError") {
-          lastError = new Error(`Request timed out after ${this.timeout}ms`)
+          lastError = new Error(`接口请求超时: ${this.timeout}ms`)
         }
         if (attempt < this.retries) {
           await new Promise((resolve) => setTimeout(resolve, 1000 * attempt))
@@ -65,8 +69,13 @@ class FetchInstance {
     throw lastError
   }
 
-  get<T>(url: string, options?: RequestInit): Promise<ApiResponse<T>> {
-    return this.request<ApiResponse<T>>(url, { ...options, method: "GET" })
+  get<T>(url: string, params?: Record<string, any>, options?: RequestInit): Promise<ApiResponse<T>> {
+    let queryUrl = url
+    if (params) {
+      const realParams = removeNullOrUndefined(params) as Record<string, any>
+      queryUrl = queryString.stringifyUrl({ url: queryUrl, query: realParams })
+    }
+    return this.request<ApiResponse<T>>(queryUrl, { ...options, method: "GET" })
   }
 
   post<T>(url: string, data?: unknown, options?: RequestInit): Promise<ApiResponse<T>> {
@@ -85,9 +94,8 @@ const api = new FetchInstance({
   retries: 0,
 })
 
-// biome-ignore lint/correctness/useHookAtTopLevel: <not react hook>
 api.useRequestInterceptor((options) => {
-  const token = useUser.getState().token
+  const token = useAuth.getState().token
   if (token) {
     options.headers = {
       ...options.headers,
@@ -97,7 +105,6 @@ api.useRequestInterceptor((options) => {
   return options
 })
 
-// biome-ignore lint/correctness/useHookAtTopLevel: <not react hook>
 api.useResponseInterceptor((response) => {
   if (response.status === 401) {
     redirect({
