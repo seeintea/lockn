@@ -100,21 +100,21 @@ export class UserController {
     })
   }
 
-  @Get("delete")
+  @Post("delete")
   @ApiOperation({ summary: "删除用户" })
-  async delete(@Query("userId") userId: string) {
-    const user = await this.userService.find(userId, true)
+  async delete(@Body() body: { userId: string }) {
+    const user = await this.userService.find(body.userId, true)
     if (!user) return true
     user.isDeleted = 1
     const next = await this.userService.update(user)
     return !next
   }
 
-  @Get("update/enable")
+  @Post("update/enable")
   @ApiOperation({ summary: "启用/禁用用户" })
-  async enable(@Query("userId") userId: string) {
-    const user = await this.userService.find(userId, true)
-    user.isDisabled = user.isDeleted === 1 ? 0 : 1
+  async enable(@Body() body: { userId: string }) {
+    const user = await this.userService.find(body.userId, true)
+    user.isDisabled = user.isDisabled === 1 ? 0 : 1
     await this.userService.update(user)
   }
 }
