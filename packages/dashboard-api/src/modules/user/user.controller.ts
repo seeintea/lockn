@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Post, Query } from "@nestjs/common"
 import { ApiOperation, ApiTags } from "@nestjs/swagger"
 import { ZodResponse } from "nestjs-zod"
+import { Permission } from "@/common/decorators/permission.decorator"
 import { BusinessException } from "@/common/exceptions/business.exception"
 import { SnowflakeService } from "@/common/utils/snowflake.service"
 import { getSaltAndPassword } from "@/helper/password"
@@ -24,6 +25,7 @@ export class UserController {
   ) {}
 
   @Post("create")
+  @Permission("sys:user:create")
   @ApiOperation({ summary: "创建用户" })
   @ZodResponse({
     type: UserResponseDto,
@@ -61,6 +63,7 @@ export class UserController {
   }
 
   @Post("update")
+  @Permission("sys:user:update")
   @ApiOperation({ summary: "更新用户" })
   @ZodResponse({
     type: UserResponseDto,
@@ -88,6 +91,7 @@ export class UserController {
   }
 
   @Post("update/password/reset")
+  @Permission("sys:user:reset-password")
   @ApiOperation({ summary: "重置密码" })
   async resetPassword(@Body() resetUserPwdDto: ResetUserPwdDto) {
     const user = await this.userService.find(resetUserPwdDto.userId)
@@ -101,6 +105,7 @@ export class UserController {
   }
 
   @Post("delete")
+  @Permission("sys:user:delete")
   @ApiOperation({ summary: "删除用户" })
   async delete(@Body() body: { userId: string }) {
     const user = await this.userService.find(body.userId, true)
@@ -111,6 +116,7 @@ export class UserController {
   }
 
   @Post("update/enable")
+  @Permission("sys:user:enable")
   @ApiOperation({ summary: "启用/禁用用户" })
   async enable(@Body() body: { userId: string }) {
     const user = await this.userService.find(body.userId, true)

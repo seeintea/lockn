@@ -2,7 +2,7 @@ import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from
 import { Reflector } from "@nestjs/core"
 import { JwtService } from "@nestjs/jwt"
 import { Request } from "express"
-import { PUBLIC_DECORATOR } from "@/constants"
+import { PERMISSION_DECORATOR, PUBLIC_DECORATOR } from "@/constants"
 import { RedisService } from "@/database"
 
 @Injectable()
@@ -14,10 +14,8 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(PUBLIC_DECORATOR, [
-      context.getHandler(),
-      context.getClass(),
-    ])
+    const targets = [context.getHandler(), context.getClass()]
+    const isPublic = this.reflector.getAllAndOverride<boolean>(PUBLIC_DECORATOR, targets)
     if (isPublic) {
       return true
     }
@@ -30,14 +28,22 @@ export class AuthGuard implements CanActivate {
 
     try {
       await this.jwtService.verifyAsync(token, {
-        secret: process.env.JWT_SECRET || "default_secret_key",
+        secret: process.env.JWT_SECRET,
       })
-      const redisKey = `auth:token:${token}`
-      const cachedUserInfo = await this.redisService.get(redisKey)
+      const userRedisKey = `auth:token:${token}`
+      const cachedUserInfo = await this.redisService.get(userRedisKey)
       if (!cachedUserInfo) {
         throw new UnauthorizedException("Token invalid or expired")
       }
       request.user = JSON.parse(cachedUserInfo)
+      const needPermission = this.reflector.getAllAndOverride<string>(PERMISSION_DECORATOR, targets)
+      if (needPermission) {
+        // TODO
+        const userPermissions = request.user.permissions as string[]
+        if (!userPermissions.includes(needPermission)) {
+          throw new UnauthorizedException("Permission denied")
+        }
+      }
     } catch {
       throw new UnauthorizedException()
     }
