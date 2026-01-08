@@ -39,10 +39,6 @@ export class AuthGuard implements CanActivate {
       const needPermission = this.reflector.getAllAndOverride<string>(PERMISSION_DECORATOR, targets)
       if (needPermission) {
         // TODO
-        const userPermissions = request.user.permissions as string[]
-        if (!userPermissions.includes(needPermission)) {
-          throw new UnauthorizedException("Permission denied")
-        }
       }
     } catch {
       throw new UnauthorizedException()
