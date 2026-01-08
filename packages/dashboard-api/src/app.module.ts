@@ -6,10 +6,10 @@ import { AuthGuard } from "@/common/guards/auth.guard"
 import { TransformResponseInterceptor } from "@/common/interceptors/transform-response.interceptor"
 import { SnowflakeService } from "@/common/utils/snowflake.service"
 import { MysqlModule, RedisModule } from "@/database"
-import { AuthModule, RoleModule, UserModule } from "@/modules"
+import { AuthModule, RoleModule, UserModule, UserRoleModule } from "@/modules"
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), MysqlModule, RedisModule, UserModule, AuthModule, RoleModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), MysqlModule, RedisModule, UserModule, AuthModule, RoleModule, UserRoleModule],
   controllers: [],
   providers: [
     SnowflakeService,
