@@ -13,16 +13,12 @@ export const paginationMetaSchema = z
   .meta({ id: "分页元数据" })
 
 export const paginationDataSchema = <T>(itemSchema: z.ZodSchema<T>) =>
-  z
-    .object({
-      meta: paginationMetaSchema,
-      items: z.array(itemSchema).describe("分页数据"),
-    })
-    .meta({ id: "分页数据" })
-
-export const paginationQuerySchema = z
-  .object({
-    page: z.number().min(1).default(1),
-    pageSize: z.number().min(1).max(999).default(10),
+  z.object({
+    meta: paginationMetaSchema,
+    items: z.array(itemSchema).describe("分页数据"),
   })
-  .meta({ id: "分页基础查询参数" })
+
+export const paginationQuerySchema = z.object({
+  page: z.number().min(1).default(1),
+  pageSize: z.number().min(1).max(999).default(10),
+})

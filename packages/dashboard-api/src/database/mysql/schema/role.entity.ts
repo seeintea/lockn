@@ -7,10 +7,11 @@ export const role = mysqlTable(
     roleName: varchar("role_name", { length: 30 }).notNull(),
     roleKey: varchar("role_key", { length: 100 }).notNull(),
     sort: int("sort").notNull(),
-    roleStatus: tinyint("role_status").notNull(),
+    remark: varchar("remark", { length: 500 }).default(""),
+    isDisabled: tinyint("is_disabled").notNull(),
+    isDeleted: tinyint("is_deleted").notNull(),
     createTime: datetime("create_time"),
     updateTime: datetime("update_time"),
-    remark: varchar("remark", { length: 500 }).default(""),
   },
   (table) => [uniqueIndex("idx_role_key").on(table.roleKey)],
 )
