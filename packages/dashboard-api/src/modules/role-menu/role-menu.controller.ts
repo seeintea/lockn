@@ -1,0 +1,58 @@
+import { Body, Controller, Get, Post, Query } from "@nestjs/common"
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger"
+import { ZodResponse } from "nestjs-zod"
+import { Permission } from "@/common/decorators/permission.decorator"
+import {
+  CreateRoleMenuDto,
+  DeleteRoleMenuDto,
+  PaginationRoleMenuQueryDto,
+  PaginationRoleMenuResponseDto,
+  RoleMenuResponseDto,
+  UpdateRoleMenuDto,
+} from "./role-menu.dto"
+import { RoleMenuService } from "./role-menu.service"
+
+@ApiTags("角色菜单关联")
+@Controller("sys/role-menu")
+export class RoleMenuController {
+  constructor(private readonly roleMenuService: RoleMenuService) {}
+
+  @Post("/create")
+  @Permission("sys:role-menu:create")
+  @ApiOperation({ summary: "创建角色菜单关联" })
+  @ZodResponse({
+    type: RoleMenuResponseDto,
+  })
+  async create(@Body() createRoleMenu: CreateRoleMenuDto): Promise<RoleMenuResponseDto> {
+    return await this.roleMenuService.create(createRoleMenu)
+  }
+
+  @Post("/update")
+  @Permission("sys:role-menu:update")
+  @ApiOperation({ summary: "更新角色菜单关联" })
+  @ZodResponse({
+    type: RoleMenuResponseDto,
+  })
+  async update(@Body() updateRoleMenu: UpdateRoleMenuDto): Promise<RoleMenuResponseDto> {
+    return await this.roleMenuService.update(updateRoleMenu)
+  }
+
+  @Post("/delete")
+  @Permission("sys:role-menu:delete")
+  @ApiOperation({ summary: "删除角色菜单关联" })
+  @ApiResponse({ type: Boolean })
+  async delete(@Body() deleteRoleMenu: DeleteRoleMenuDto): Promise<boolean> {
+    return await this.roleMenuService.delete(deleteRoleMenu.id)
+  }
+
+  @Get("/list")
+  @Permission("sys:role-menu:list")
+  @ApiOperation({ summary: "查询角色菜单关联列表" })
+  @ZodResponse({
+    type: PaginationRoleMenuResponseDto,
+  })
+  async list(@Query() query: PaginationRoleMenuQueryDto) {
+    return await this.roleMenuService.list(query)
+  }
+}
+
