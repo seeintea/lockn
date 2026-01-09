@@ -1,16 +1,19 @@
 import { Inject, Injectable } from "@nestjs/common"
 import { and, count, eq, like, SQL } from "drizzle-orm"
 import { MYSQL_TOKEN } from "@/constants"
-import { type MySqlDatabase, mysqlSchema } from "@/database"
+import { type MySqlDatabase, mysqlSchema, RedisService } from "@/database"
 import { BaseService } from "@/helper/base.service"
 import { createPaginatedData, getPaginationOptions } from "@/helper/pagination"
 import type { CreateMenu, Menu, MenuPagination, PaginationMenuQuery, UpdateMenu } from "./menu.dto"
 
-const { menu: menuSchema } = mysqlSchema
+const { menu: menuSchema, roleMenu: roleMenuSchema } = mysqlSchema
 
 @Injectable()
 export class MenuService extends BaseService {
-  constructor(@Inject(MYSQL_TOKEN) db: MySqlDatabase) {
+  constructor(
+    @Inject(MYSQL_TOKEN) db: MySqlDatabase,
+    private readonly redisService: RedisService,
+  ) {
     super(db)
   }
 
@@ -111,7 +114,46 @@ export class MenuService extends BaseService {
   }
 
   async tree() {
-    const menus = await this.db
+    const menus = await this.listAllMenus()
+    return this.createTree(menus)
+  }
+
+  async treeByMenuIds(menuIds: number[]) {
+    const allMenus = await this.listAllMenus()
+    const menuMap = new Map(allMenus.map((m) => [m.menuId, m]))
+
+    const included = new Set<number>()
+    for (const id of menuIds) {
+      let currentId: number | undefined = id
+      for (let i = 0; i < 10_000 && currentId; i++) {
+        const m = menuMap.get(currentId)
+        if (!m) break
+        if (included.has(m.menuId)) break
+        included.add(m.menuId)
+        const parentId = m.parentId ?? 0
+        currentId = parentId > 0 ? parentId : undefined
+      }
+    }
+
+    const allowedMenus = allMenus.filter((m) => included.has(m.menuId))
+    return this.createTree(allowedMenus)
+  }
+
+  async refreshRoleMenuCacheForRole(roleId: number): Promise<void> {
+    const menuIds = await this.listMenuIdsByRoleId(roleId)
+    const tree = await this.treeByMenuIds(menuIds)
+    await this.redisService.set(`auth:role-menu:${roleId}`, JSON.stringify(tree))
+  }
+
+  async refreshRoleMenuCacheForAllRoles(): Promise<void> {
+    const roleIds = await this.listRoleIdsWithAnyMenus()
+    for (const roleId of roleIds) {
+      await this.refreshRoleMenuCacheForRole(roleId)
+    }
+  }
+
+  private async listAllMenus() {
+    return await this.db
       .select({
         menuId: menuSchema.menuId,
         menuName: menuSchema.menuName,
@@ -126,7 +168,28 @@ export class MenuService extends BaseService {
       })
       .from(menuSchema)
       .where(eq(menuSchema.isDeleted, 0))
+  }
 
+  private async listMenuIdsByRoleId(roleId: number): Promise<number[]> {
+    const rows = await this.db
+      .select({
+        menuId: roleMenuSchema.menuId,
+      })
+      .from(roleMenuSchema)
+      .where(eq(roleMenuSchema.roleId, roleId))
+    return rows.map((r) => r.menuId)
+  }
+
+  private async listRoleIdsWithAnyMenus(): Promise<number[]> {
+    const rows = await this.db
+      .select({
+        roleId: roleMenuSchema.roleId,
+      })
+      .from(roleMenuSchema)
+    return [...new Set(rows.map((r) => r.roleId))]
+  }
+
+  private createTree(menus: Awaited<ReturnType<MenuService["listAllMenus"]>>) {
     const ms = menus.filter((m) => m.menuType === "M")
     const rs = menus.filter((m) => m.menuType === "R")
     const bs = menus.filter((m) => m.menuType === "B")

@@ -2,6 +2,7 @@ import { Body, Controller, Get, Post, Query } from "@nestjs/common"
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger"
 import { ZodResponse } from "nestjs-zod"
 import { Permission } from "@/common/decorators/permission.decorator"
+import { MenuService } from "@/modules/menu/menu.service"
 import {
   CreateRoleMenuDto,
   DeleteRoleMenuDto,
@@ -15,7 +16,10 @@ import { RoleMenuService } from "./role-menu.service"
 @ApiTags("角色菜单关联")
 @Controller("sys/role-menu")
 export class RoleMenuController {
-  constructor(private readonly roleMenuService: RoleMenuService) {}
+  constructor(
+    private readonly roleMenuService: RoleMenuService,
+    private readonly menuService: MenuService,
+  ) {}
 
   @Post("/create")
   @Permission("sys:role-menu:create")
@@ -24,7 +28,9 @@ export class RoleMenuController {
     type: RoleMenuResponseDto,
   })
   async create(@Body() createRoleMenu: CreateRoleMenuDto): Promise<RoleMenuResponseDto> {
-    return await this.roleMenuService.create(createRoleMenu)
+    const created = await this.roleMenuService.create(createRoleMenu)
+    await this.menuService.refreshRoleMenuCacheForRole(created.roleId)
+    return created
   }
 
   @Post("/update")
@@ -34,7 +40,15 @@ export class RoleMenuController {
     type: RoleMenuResponseDto,
   })
   async update(@Body() updateRoleMenu: UpdateRoleMenuDto): Promise<RoleMenuResponseDto> {
-    return await this.roleMenuService.update(updateRoleMenu)
+    const before = await this.roleMenuService.find(updateRoleMenu.id)
+    const updated = await this.roleMenuService.update(updateRoleMenu)
+    const roleIds = new Set<number>()
+    if (before?.roleId) roleIds.add(before.roleId)
+    if (updated.roleId) roleIds.add(updated.roleId)
+    for (const roleId of roleIds) {
+      await this.menuService.refreshRoleMenuCacheForRole(roleId)
+    }
+    return updated
   }
 
   @Post("/delete")
@@ -42,7 +56,12 @@ export class RoleMenuController {
   @ApiOperation({ summary: "删除角色菜单关联" })
   @ApiResponse({ type: Boolean })
   async delete(@Body() deleteRoleMenu: DeleteRoleMenuDto): Promise<boolean> {
-    return await this.roleMenuService.delete(deleteRoleMenu.id)
+    const before = await this.roleMenuService.find(deleteRoleMenu.id)
+    const ok = await this.roleMenuService.delete(deleteRoleMenu.id)
+    if (before?.roleId) {
+      await this.menuService.refreshRoleMenuCacheForRole(before.roleId)
+    }
+    return ok
   }
 
   @Get("/list")
@@ -55,4 +74,3 @@ export class RoleMenuController {
     return await this.roleMenuService.list(query)
   }
 }
-

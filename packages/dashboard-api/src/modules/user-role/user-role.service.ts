@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common"
-import { and, count, eq, SQL } from "drizzle-orm"
+import { and, asc, count, eq, SQL } from "drizzle-orm"
 import { MYSQL_TOKEN } from "@/constants"
 
 import { type MySqlDatabase, mysqlSchema } from "@/database"
@@ -89,5 +89,19 @@ export class UserRoleService extends BaseService {
       .offset(offset)
 
     return createPaginatedData(userRoles, total, page, pageSize)
+  }
+
+  async findPrimaryRole(userId: string): Promise<{ roleId: number; roleName: string | null } | undefined> {
+    const [result] = await this.db
+      .select({
+        roleId: userRoleSchema.roleId,
+        roleName: roleSchema.roleName,
+      })
+      .from(userRoleSchema)
+      .leftJoin(roleSchema, eq(userRoleSchema.roleId, roleSchema.roleId))
+      .where(eq(userRoleSchema.userId, userId))
+      .orderBy(asc(roleSchema.sort))
+      .limit(1)
+    return result
   }
 }

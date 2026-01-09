@@ -25,11 +25,13 @@ export class MenuController {
     type: MenuResponseDto,
   })
   async create(@Body() createMenu: CreateMenuDto): Promise<MenuResponseDto> {
-    return await this.menuService.create({
+    const created = await this.menuService.create({
       ...createMenu,
       isDisabled: 0,
       isDeleted: 0,
     })
+    await this.menuService.refreshRoleMenuCacheForAllRoles()
+    return created
   }
 
   @Post("/update")
@@ -39,7 +41,9 @@ export class MenuController {
     type: MenuResponseDto,
   })
   async update(@Body() updateMenu: UpdateMenuDto): Promise<MenuResponseDto> {
-    return await this.menuService.update(updateMenu)
+    const updated = await this.menuService.update(updateMenu)
+    await this.menuService.refreshRoleMenuCacheForAllRoles()
+    return updated
   }
 
   @Post("/delete")
@@ -47,7 +51,9 @@ export class MenuController {
   @ApiOperation({ summary: "删除菜单" })
   @ApiResponse({ type: Boolean })
   async delete(@Body() deleteMenu: DeleteMenuDto): Promise<boolean> {
-    return await this.menuService.delete(deleteMenu.menuId)
+    const ok = await this.menuService.delete(deleteMenu.menuId)
+    await this.menuService.refreshRoleMenuCacheForAllRoles()
+    return ok
   }
 
   @Get("/list")

@@ -90,4 +90,12 @@ export class RoleMenuService extends BaseService {
 
     return createPaginatedData(roleMenus, total, page, pageSize)
   }
+
+  async listMenuIdsByRoleId(roleId: number): Promise<number[]> {
+    const rows = await this.db
+      .select({ menuId: roleMenuSchema.menuId })
+      .from(roleMenuSchema)
+      .where(eq(roleMenuSchema.roleId, roleId))
+    return rows.map((r) => r.menuId)
+  }
 }

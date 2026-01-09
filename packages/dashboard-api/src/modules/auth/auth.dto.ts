@@ -15,6 +15,8 @@ const loginResponseSchema = z
   .object({
     userId: z.string().length(32).describe("用户ID"),
     username: z.string().min(6).max(30).describe("用户名"),
+    roleId: z.number().int().positive().describe("角色ID"),
+    roleName: z.string().describe("角色名"),
     accessToken: z.string().describe("JWT Token"),
   })
   .meta({ id: "登录响应类型" })
