@@ -122,20 +122,41 @@ export class MenuService extends BaseService {
     const allMenus = await this.listAllMenus()
     const menuMap = new Map(allMenus.map((m) => [m.menuId, m]))
 
-    const included = new Set<number>()
-    for (const id of menuIds) {
-      let currentId: number | undefined = id
-      for (let i = 0; i < 10_000 && currentId; i++) {
-        const m = menuMap.get(currentId)
-        if (!m) break
-        if (included.has(m.menuId)) break
-        included.add(m.menuId)
-        const parentId = m.parentId ?? 0
-        currentId = parentId > 0 ? parentId : undefined
+    const granted = new Set(menuIds)
+
+    const allowedMenu = new Set<number>()
+    for (const id of granted) {
+      const m = menuMap.get(id)
+      if (m?.menuType === "M") {
+        allowedMenu.add(id)
       }
     }
 
-    const allowedMenus = allMenus.filter((m) => included.has(m.menuId))
+    const allowedRoute = new Set<number>()
+    for (const id of granted) {
+      const r = menuMap.get(id)
+      if (!r || r.menuType !== "R") continue
+      const parentId = r.parentId ?? 0
+      const parent = menuMap.get(parentId)
+      if (parent?.menuType === "M" && allowedMenu.has(parentId)) {
+        allowedRoute.add(id)
+      }
+    }
+
+    const allowedButton = new Set<number>()
+    for (const id of granted) {
+      const b = menuMap.get(id)
+      if (!b || b.menuType !== "B") continue
+      const parentId = b.parentId ?? 0
+      const parent = menuMap.get(parentId)
+      if (parent?.menuType === "R" && allowedRoute.has(parentId)) {
+        allowedButton.add(id)
+      }
+    }
+
+    const allowedMenus = allMenus.filter(
+      (m) => allowedMenu.has(m.menuId) || allowedRoute.has(m.menuId) || allowedButton.has(m.menuId),
+    )
     return this.createTree(allowedMenus)
   }
 
