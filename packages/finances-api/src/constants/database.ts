@@ -1,0 +1,1 @@
+export const POSTGRESQL_TOKEN = Symbol("POSTGRESQL_TOKEN")
