@@ -1,4 +1,4 @@
-import { boolean, date, pgTable, uniqueIndex, varchar } from "drizzle-orm/pg-core"
+import { boolean, pgTable, timestamp, uniqueIndex, varchar } from "drizzle-orm/pg-core"
 
 export const user = pgTable(
   "sys_user",
@@ -11,8 +11,11 @@ export const user = pgTable(
     phone: varchar("phone", { length: 11 }).notNull().default(""),
     isDisabled: boolean("is_disabled").notNull().default(false),
     isDeleted: boolean("is_deleted").notNull().default(false),
-    createTime: date("create_time").notNull(),
-    updateTime: date("update_time").notNull(),
+    createTime: timestamp("create_time").notNull().defaultNow(),
+    updateTime: timestamp("update_time")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
   },
-  (table) => [uniqueIndex("username").on(table.username)],
+  (table) => [uniqueIndex("sys_user_username_uq").on(table.username)],
 )
