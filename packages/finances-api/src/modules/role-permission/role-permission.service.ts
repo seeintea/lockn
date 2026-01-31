@@ -1,7 +1,9 @@
 import { Injectable, NotFoundException } from "@nestjs/common"
-import { and, eq } from "drizzle-orm"
+import { and, desc, eq, sql } from "drizzle-orm"
 import { toIsoString } from "@/common/utils/date"
+import { normalizePage, toPageResult } from "@/common/utils/pagination"
 import { PgService, pgSchema } from "@/database/postgresql"
+import type { PageResult } from "@/types/response"
 import type { CreateRolePermission, RolePermission } from "./role-permission.dto"
 
 const { rolePermission: rolePermissionSchema } = pgSchema
@@ -42,10 +44,24 @@ export class RolePermissionService {
     return true
   }
 
-  async list(query: { roleId?: string; permissionId?: string }): Promise<RolePermission[]> {
+  async list(query: {
+    roleId?: string
+    permissionId?: string
+    page?: number | string
+    pageSize?: number | string
+  }): Promise<PageResult<RolePermission>> {
     const where: Parameters<typeof and> = []
     if (query.roleId) where.push(eq(rolePermissionSchema.roleId, query.roleId))
     if (query.permissionId) where.push(eq(rolePermissionSchema.permissionId, query.permissionId))
+
+    const pageParams = normalizePage(query)
+
+    const countQb = this.pg.pdb.select({ count: sql<number>`count(*)` }).from(rolePermissionSchema)
+    if (where.length) {
+      countQb.where(and(...where))
+    }
+    const totalRows = await countQb
+    const total = Number(totalRows[0]?.count ?? 0)
 
     const qb = this.pg.pdb
       .select({
@@ -57,10 +73,13 @@ export class RolePermissionService {
     if (where.length) {
       qb.where(and(...where))
     }
-    const rows = await qb
-    return rows.map((row) => ({
+    const rows = await qb.orderBy(desc(rolePermissionSchema.createTime)).limit(pageParams.limit).offset(pageParams.offset)
+
+    const list = rows.map((row) => ({
       ...row,
       createTime: toIsoString(row.createTime),
     }))
+
+    return toPageResult(pageParams, total, list)
   }
 }

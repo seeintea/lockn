@@ -2,7 +2,7 @@ import { Body, Controller, Get, Post, Query } from "@nestjs/common"
 import { ApiOperation, ApiTags } from "@nestjs/swagger"
 import { nanoid } from "nanoid"
 import { ZodResponse } from "nestjs-zod"
-import { CreateRoleDto, DeleteRoleDto, RoleListQueryDto, RoleResponseDto, UpdateRoleDto } from "./role.dto"
+import { CreateRoleDto, DeleteRoleDto, RoleListQueryDto, RolePageResponseDto, RoleResponseDto, UpdateRoleDto } from "./role.dto"
 import { RoleService } from "./role.service"
 
 @ApiTags("角色")
@@ -26,7 +26,7 @@ export class RoleController {
 
   @Get("list")
   @ApiOperation({ summary: "查询角色列表" })
-  @ZodResponse({ type: [RoleResponseDto] })
+  @ZodResponse({ type: RolePageResponseDto })
   async list(@Query() query: RoleListQueryDto) {
     return this.roleService.list(query)
   }
@@ -44,4 +44,3 @@ export class RoleController {
     return this.roleService.delete(body.roleId)
   }
 }
-

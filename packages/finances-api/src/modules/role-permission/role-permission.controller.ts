@@ -5,6 +5,7 @@ import {
   CreateRolePermissionDto,
   DeleteRolePermissionDto,
   RolePermissionListQueryDto,
+  RolePermissionPageResponseDto,
   RolePermissionResponseDto,
 } from "./role-permission.dto"
 import { RolePermissionService } from "./role-permission.service"
@@ -30,7 +31,7 @@ export class RolePermissionController {
 
   @Get("list")
   @ApiOperation({ summary: "查询角色权限关联列表" })
-  @ZodResponse({ type: [RolePermissionResponseDto] })
+  @ZodResponse({ type: RolePermissionPageResponseDto })
   async list(@Query() query: RolePermissionListQueryDto) {
     return this.rolePermissionService.list(query)
   }

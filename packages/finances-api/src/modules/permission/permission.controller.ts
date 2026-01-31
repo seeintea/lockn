@@ -6,6 +6,7 @@ import {
   CreatePermissionDto,
   DeletePermissionDto,
   PermissionListQueryDto,
+  PermissionPageResponseDto,
   PermissionResponseDto,
   UpdatePermissionDto,
 } from "./permission.dto"
@@ -32,7 +33,7 @@ export class PermissionController {
 
   @Get("list")
   @ApiOperation({ summary: "查询权限列表" })
-  @ZodResponse({ type: [PermissionResponseDto] })
+  @ZodResponse({ type: PermissionPageResponseDto })
   async list(@Query() query: PermissionListQueryDto) {
     return this.permissionService.list(query)
   }

@@ -1,7 +1,9 @@
 import { Injectable, NotFoundException } from "@nestjs/common"
-import { and, eq } from "drizzle-orm"
+import { and, desc, eq, sql } from "drizzle-orm"
 import { toIsoString } from "@/common/utils/date"
+import { normalizePage, toPageResult } from "@/common/utils/pagination"
 import { PgService, pgSchema } from "@/database/postgresql"
+import type { PageResult } from "@/types/response"
 import type { BookMember, CreateBookMember, UpdateBookMember } from "./book-member.dto"
 
 const { bookMember: bookMemberSchema } = pgSchema
@@ -65,10 +67,23 @@ export class BookMemberService {
     return true
   }
 
-  async list(query: { bookId?: string; userId?: string }): Promise<BookMember[]> {
+  async list(query: {
+    bookId?: string
+    userId?: string
+    page?: number | string
+    pageSize?: number | string
+  }): Promise<PageResult<BookMember>> {
     const where: Parameters<typeof and> = [eq(bookMemberSchema.isDeleted, false)]
     if (query.bookId) where.push(eq(bookMemberSchema.bookId, query.bookId))
     if (query.userId) where.push(eq(bookMemberSchema.userId, query.userId))
+
+    const pageParams = normalizePage(query)
+
+    const totalRows = await this.pg.pdb
+      .select({ count: sql<number>`count(*)` })
+      .from(bookMemberSchema)
+      .where(and(...where))
+    const total = Number(totalRows[0]?.count ?? 0)
 
     const rows = await this.pg.pdb
       .select({
@@ -84,10 +99,16 @@ export class BookMemberService {
       })
       .from(bookMemberSchema)
       .where(and(...where))
-    return rows.map((row) => ({
+      .orderBy(desc(bookMemberSchema.createTime))
+      .limit(pageParams.limit)
+      .offset(pageParams.offset)
+
+    const list = rows.map((row) => ({
       ...row,
       createTime: toIsoString(row.createTime),
       updateTime: toIsoString(row.updateTime),
     }))
+
+    return toPageResult(pageParams, total, list)
   }
 }

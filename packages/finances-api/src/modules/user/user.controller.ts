@@ -2,7 +2,7 @@ import { Body, Controller, Get, Post, Query } from "@nestjs/common"
 import { ApiOperation, ApiTags } from "@nestjs/swagger"
 import { nanoid } from "nanoid"
 import { ZodResponse } from "nestjs-zod"
-import { CreateUserDto, DeleteUserDto, UpdateUserDto, UserListQueryDto, UserResponseDto } from "./user.dto"
+import { CreateUserDto, DeleteUserDto, UpdateUserDto, UserListQueryDto, UserPageResponseDto, UserResponseDto } from "./user.dto"
 import { UserService } from "./user.service"
 
 @ApiTags("用户")
@@ -26,7 +26,7 @@ export class UserController {
 
   @Get("list")
   @ApiOperation({ summary: "查询用户列表" })
-  @ZodResponse({ type: [UserResponseDto] })
+  @ZodResponse({ type: UserPageResponseDto })
   async list(@Query() query: UserListQueryDto) {
     return this.userService.list(query)
   }

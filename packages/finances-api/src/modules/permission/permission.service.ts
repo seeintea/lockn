@@ -1,7 +1,9 @@
 import { Injectable, NotFoundException } from "@nestjs/common"
-import { and, eq, like } from "drizzle-orm"
+import { and, desc, eq, like, sql } from "drizzle-orm"
 import { toIsoString } from "@/common/utils/date"
+import { normalizePage, toPageResult } from "@/common/utils/pagination"
 import { PgService, pgSchema } from "@/database/postgresql"
+import type { PageResult } from "@/types/response"
 import type { CreatePermission, Permission, UpdatePermission } from "./permission.dto"
 
 const { permission: permissionSchema } = pgSchema
@@ -67,10 +69,23 @@ export class PermissionService {
     return true
   }
 
-  async list(query: { code?: string; module?: string }): Promise<Permission[]> {
+  async list(query: {
+    code?: string
+    module?: string
+    page?: number | string
+    pageSize?: number | string
+  }): Promise<PageResult<Permission>> {
     const where: Parameters<typeof and> = [eq(permissionSchema.isDeleted, false)]
     if (query.code) where.push(like(permissionSchema.code, `%${query.code}%`))
     if (query.module) where.push(eq(permissionSchema.module, query.module))
+
+    const pageParams = normalizePage(query)
+
+    const totalRows = await this.pg.pdb
+      .select({ count: sql<number>`count(*)` })
+      .from(permissionSchema)
+      .where(and(...where))
+    const total = Number(totalRows[0]?.count ?? 0)
 
     const rows = await this.pg.pdb
       .select({
@@ -85,10 +100,16 @@ export class PermissionService {
       })
       .from(permissionSchema)
       .where(and(...where))
-    return rows.map((row) => ({
+      .orderBy(desc(permissionSchema.createTime))
+      .limit(pageParams.limit)
+      .offset(pageParams.offset)
+
+    const list = rows.map((row) => ({
       ...row,
       createTime: toIsoString(row.createTime),
       updateTime: toIsoString(row.updateTime),
     }))
+
+    return toPageResult(pageParams, total, list)
   }
 }

@@ -4,6 +4,7 @@ import { nanoid } from "nanoid"
 import { ZodResponse } from "nestjs-zod"
 import {
   BookMemberListQueryDto,
+  BookMemberPageResponseDto,
   BookMemberResponseDto,
   CreateBookMemberDto,
   DeleteBookMemberDto,
@@ -32,7 +33,7 @@ export class BookMemberController {
 
   @Get("list")
   @ApiOperation({ summary: "查询账本成员列表" })
-  @ZodResponse({ type: [BookMemberResponseDto] })
+  @ZodResponse({ type: BookMemberPageResponseDto })
   async list(@Query() query: BookMemberListQueryDto) {
     return this.bookMemberService.list(query)
   }

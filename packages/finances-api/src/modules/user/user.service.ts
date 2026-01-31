@@ -1,7 +1,9 @@
 import { Injectable, NotFoundException } from "@nestjs/common"
-import { and, eq, like } from "drizzle-orm"
+import { and, desc, eq, like, sql } from "drizzle-orm"
 import { toIsoString } from "@/common/utils/date"
+import { normalizePage, toPageResult } from "@/common/utils/pagination"
 import { PgService, pgSchema } from "@/database/postgresql"
+import type { PageResult } from "@/types/response"
 import type { CreateUser, UpdateUser, User } from "./user.dto"
 
 const { user: userSchema } = pgSchema
@@ -91,10 +93,20 @@ export class UserService {
     return true
   }
 
-  async list(query: { userId?: string; username?: string }): Promise<User[]> {
+  async list(query: {
+    userId?: string
+    username?: string
+    page?: number | string
+    pageSize?: number | string
+  }): Promise<PageResult<User>> {
     const where: Parameters<typeof and> = [eq(userSchema.isDeleted, false)]
     if (query.userId) where.push(eq(userSchema.userId, query.userId))
     if (query.username) where.push(like(userSchema.username, `%${query.username}%`))
+
+    const pageParams = normalizePage(query)
+
+    const totalRows = await this.pg.pdb.select({ count: sql<number>`count(*)` }).from(userSchema).where(and(...where))
+    const total = Number(totalRows[0]?.count ?? 0)
 
     const rows = await this.pg.pdb
       .select({
@@ -109,10 +121,16 @@ export class UserService {
       })
       .from(userSchema)
       .where(and(...where))
-    return rows.map((row) => ({
+      .orderBy(desc(userSchema.createTime))
+      .limit(pageParams.limit)
+      .offset(pageParams.offset)
+
+    const list = rows.map((row) => ({
       ...row,
       createTime: toIsoString(row.createTime),
       updateTime: toIsoString(row.updateTime),
     }))
+
+    return toPageResult(pageParams, total, list)
   }
 }

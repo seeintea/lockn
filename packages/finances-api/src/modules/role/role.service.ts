@@ -1,7 +1,9 @@
 import { Injectable, NotFoundException } from "@nestjs/common"
-import { and, eq, like } from "drizzle-orm"
+import { and, desc, eq, like, sql } from "drizzle-orm"
 import { toIsoString } from "@/common/utils/date"
+import { normalizePage, toPageResult } from "@/common/utils/pagination"
 import { PgService, pgSchema } from "@/database/postgresql"
+import type { PageResult } from "@/types/response"
 import type { CreateRole, Role, UpdateRole } from "./role.dto"
 
 const { role: roleSchema } = pgSchema
@@ -61,10 +63,20 @@ export class RoleService {
     return true
   }
 
-  async list(query: { roleCode?: string; roleName?: string }): Promise<Role[]> {
+  async list(query: {
+    roleCode?: string
+    roleName?: string
+    page?: number | string
+    pageSize?: number | string
+  }): Promise<PageResult<Role>> {
     const where: Parameters<typeof and> = [eq(roleSchema.isDeleted, false)]
     if (query.roleCode) where.push(like(roleSchema.roleCode, `%${query.roleCode}%`))
     if (query.roleName) where.push(like(roleSchema.roleName, `%${query.roleName}%`))
+
+    const pageParams = normalizePage(query)
+
+    const totalRows = await this.pg.pdb.select({ count: sql<number>`count(*)` }).from(roleSchema).where(and(...where))
+    const total = Number(totalRows[0]?.count ?? 0)
 
     const rows = await this.pg.pdb
       .select({
@@ -78,10 +90,16 @@ export class RoleService {
       })
       .from(roleSchema)
       .where(and(...where))
-    return rows.map((row) => ({
+      .orderBy(desc(roleSchema.createTime))
+      .limit(pageParams.limit)
+      .offset(pageParams.offset)
+
+    const list = rows.map((row) => ({
       ...row,
       createTime: toIsoString(row.createTime),
       updateTime: toIsoString(row.updateTime),
     }))
+
+    return toPageResult(pageParams, total, list)
   }
 }

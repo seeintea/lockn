@@ -11,6 +11,8 @@ const shape = {
   isDeleted: z.boolean().describe("是否删除"),
   createTime: z.iso.datetime().describe("创建时间"),
   updateTime: z.iso.datetime().describe("更新时间"),
+  page: z.coerce.number().int().min(1).describe("页码"),
+  pageSize: z.coerce.number().int().min(1).max(100).describe("每页数量"),
 } satisfies z.ZodRawShape
 
 const bookMemberResponseSchema = z
@@ -57,14 +59,38 @@ const bookMemberListQuerySchema = z
   .object({
     bookId: shape.bookId.optional(),
     userId: shape.userId.optional(),
+    page: shape.page.optional(),
+    pageSize: shape.pageSize.optional(),
   })
-  .meta({ id: "查询账本成员列表请求" })
+  .meta({ id: "查询账本成员分页列表请求" })
+
+const bookMemberPageItemSchema = z.object({
+  memberId: shape.memberId,
+  bookId: shape.bookId,
+  userId: shape.userId,
+  roleCode: shape.roleCode,
+  scopeType: shape.scopeType,
+  scope: shape.scope,
+  isDeleted: shape.isDeleted,
+  createTime: shape.createTime,
+  updateTime: shape.updateTime,
+})
+
+const bookMemberPageResponseSchema = z
+  .object({
+    list: z.array(bookMemberPageItemSchema),
+    total: z.number().int().min(0),
+    page: shape.page,
+    pageSize: shape.pageSize,
+  })
+  .meta({ id: "账本成员分页响应" })
 
 export class BookMemberResponseDto extends createZodDto(bookMemberResponseSchema) {}
 export class CreateBookMemberDto extends createZodDto(createBookMemberSchema) {}
 export class UpdateBookMemberDto extends createZodDto(updateBookMemberSchema) {}
 export class DeleteBookMemberDto extends createZodDto(deleteBookMemberSchema) {}
 export class BookMemberListQueryDto extends createZodDto(bookMemberListQuerySchema) {}
+export class BookMemberPageResponseDto extends createZodDto(bookMemberPageResponseSchema) {}
 
 export type BookMember = z.infer<typeof bookMemberResponseSchema>
 export type CreateBookMember = z.infer<typeof createBookMemberSchema>

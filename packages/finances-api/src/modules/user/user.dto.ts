@@ -12,6 +12,8 @@ const shape = {
   isDeleted: z.boolean().describe("是否删除"),
   createTime: z.iso.datetime().describe("创建时间"),
   updateTime: z.iso.datetime().describe("更新时间"),
+  page: z.coerce.number().int().min(1).describe("页码"),
+  pageSize: z.coerce.number().int().min(1).max(100).describe("每页数量"),
 } satisfies z.ZodRawShape
 
 const userResponseSchema = z
@@ -61,14 +63,37 @@ const userListQuerySchema = z
   .object({
     userId: shape.userId.optional(),
     username: shape.username.optional(),
+    page: shape.page.optional(),
+    pageSize: shape.pageSize.optional(),
   })
-  .meta({ id: "查询用户列表请求" })
+  .meta({ id: "查询用户分页列表请求" })
+
+const userPageItemSchema = z.object({
+  userId: shape.userId,
+  username: shape.username,
+  email: shape.email,
+  phone: shape.phone,
+  isDisabled: shape.isDisabled,
+  isDeleted: shape.isDeleted,
+  createTime: shape.createTime,
+  updateTime: shape.updateTime,
+})
+
+const userPageResponseSchema = z
+  .object({
+    list: z.array(userPageItemSchema),
+    total: z.number().int().min(0),
+    page: shape.page,
+    pageSize: shape.pageSize,
+  })
+  .meta({ id: "用户分页响应" })
 
 export class UserResponseDto extends createZodDto(userResponseSchema) {}
 export class CreateUserDto extends createZodDto(createUserSchema) {}
 export class UpdateUserDto extends createZodDto(updateUserSchema) {}
 export class DeleteUserDto extends createZodDto(deleteUserSchema) {}
 export class UserListQueryDto extends createZodDto(userListQuerySchema) {}
+export class UserPageResponseDto extends createZodDto(userPageResponseSchema) {}
 
 export type User = z.infer<typeof userResponseSchema>
 export type CreateUser = z.infer<typeof createUserSchema>

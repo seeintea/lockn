@@ -2,7 +2,7 @@ import { Body, Controller, Get, Post, Query } from "@nestjs/common"
 import { ApiOperation, ApiTags } from "@nestjs/swagger"
 import { nanoid } from "nanoid"
 import { ZodResponse } from "nestjs-zod"
-import { BookListQueryDto, BookResponseDto, CreateBookDto, DeleteBookDto, UpdateBookDto } from "./book.dto"
+import { BookListQueryDto, BookPageResponseDto, BookResponseDto, CreateBookDto, DeleteBookDto, UpdateBookDto } from "./book.dto"
 import { BookService } from "./book.service"
 
 @ApiTags("账本")
@@ -26,7 +26,7 @@ export class BookController {
 
   @Get("list")
   @ApiOperation({ summary: "查询账本列表" })
-  @ZodResponse({ type: [BookResponseDto] })
+  @ZodResponse({ type: BookPageResponseDto })
   async list(@Query() query: BookListQueryDto) {
     return this.bookService.list(query)
   }
