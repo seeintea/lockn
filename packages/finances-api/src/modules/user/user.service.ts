@@ -5,6 +5,14 @@ import { PgService, pgSchema } from "@/database/postgresql"
 import type { CreateUser, UpdateUser, User } from "./user.dto"
 
 const { user: userSchema } = pgSchema
+type AuthUser = {
+  userId: string
+  username: string
+  password: string
+  salt: string
+  isDisabled: boolean
+  isDeleted: boolean
+}
 
 @Injectable()
 export class UserService {
@@ -31,6 +39,21 @@ export class UserService {
       createTime: toIsoString(user.createTime),
       updateTime: toIsoString(user.updateTime),
     }
+  }
+
+  async findAuthUserByUsername(username: string): Promise<AuthUser | undefined> {
+    const rows = await this.pg.pdb
+      .select({
+        userId: userSchema.userId,
+        username: userSchema.username,
+        password: userSchema.password,
+        salt: userSchema.salt,
+        isDisabled: userSchema.isDisabled,
+        isDeleted: userSchema.isDeleted,
+      })
+      .from(userSchema)
+      .where(and(eq(userSchema.username, username), eq(userSchema.isDeleted, false)))
+    return rows[0]
   }
 
   async create(values: CreateUser & { userId: string }): Promise<User> {

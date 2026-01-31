@@ -27,20 +27,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       const httpResponse = exception.getResponse()
       this.logger.error(httpResponse)
 
-      if (typeof httpResponse === "string") {
-        message = httpResponse
-      } else if (httpResponse && typeof httpResponse === "object") {
-        const rawMessage = (httpResponse as { message?: unknown }).message
-        if (typeof rawMessage === "string") {
-          message = rawMessage
-        } else if (Array.isArray(rawMessage) && typeof rawMessage[0] === "string") {
-          message = rawMessage[0]
-        } else {
-          message = ErrorMsgReflect[businessCode] || ErrorMsgReflect[ErrorStatusEnum.INTERNAL_ERROR]
-        }
-      } else {
-        message = ErrorMsgReflect[businessCode] || ErrorMsgReflect[ErrorStatusEnum.INTERNAL_ERROR]
-      }
+      message = ErrorMsgReflect[businessCode] || ErrorMsgReflect[ErrorStatusEnum.INTERNAL_ERROR]
     } else if (exception instanceof Error) {
       message = exception.message
       this.logger.error(exception.message, exception.stack)

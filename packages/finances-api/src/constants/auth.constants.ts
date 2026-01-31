@@ -1,0 +1,1 @@
+export const PUBLIC_DECORATOR = Symbol("PUBLIC_DECORATOR")

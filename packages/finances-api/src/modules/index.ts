@@ -1,3 +1,4 @@
+export { AuthModule } from "./auth/auth.module"
 export { BookModule } from "./book/book.module"
 export { BookMemberModule } from "./book-member/book-member.module"
 export { PermissionModule } from "./permission/permission.module"
