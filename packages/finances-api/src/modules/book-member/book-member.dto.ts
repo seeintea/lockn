@@ -9,8 +9,8 @@ const shape = {
   scopeType: z.string().min(1).max(20).describe("范围类型"),
   scope: z.unknown().describe("范围明细"),
   isDeleted: z.boolean().describe("是否删除"),
-  createTime: z.date().describe("创建时间"),
-  updateTime: z.date().describe("更新时间"),
+  createTime: z.iso.datetime().describe("创建时间"),
+  updateTime: z.iso.datetime().describe("更新时间"),
 } satisfies z.ZodRawShape
 
 const bookMemberResponseSchema = z

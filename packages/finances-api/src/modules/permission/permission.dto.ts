@@ -8,8 +8,8 @@ const shape = {
   module: z.string().max(30).describe("所属模块"),
   isDisabled: z.boolean().describe("是否禁用"),
   isDeleted: z.boolean().describe("是否删除"),
-  createTime: z.date().describe("创建时间"),
-  updateTime: z.date().describe("更新时间"),
+  createTime: z.iso.datetime().describe("创建时间"),
+  updateTime: z.iso.datetime().describe("更新时间"),
 } satisfies z.ZodRawShape
 
 const permissionResponseSchema = z
@@ -67,4 +67,3 @@ export class PermissionListQueryDto extends createZodDto(permissionListQuerySche
 export type Permission = z.infer<typeof permissionResponseSchema>
 export type CreatePermission = z.infer<typeof createPermissionSchema>
 export type UpdatePermission = z.infer<typeof updatePermissionSchema>
-

@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common"
 import { and, eq, like } from "drizzle-orm"
+import { toIsoString } from "@/common/utils/date"
 import { PgService, pgSchema } from "@/database/postgresql"
 import type { Book, CreateBook, UpdateBook } from "./book.dto"
 
@@ -25,7 +26,11 @@ export class BookService {
       .where(and(eq(bookSchema.bookId, bookId), eq(bookSchema.isDeleted, false)))
     const book = books[0]
     if (!book) throw new NotFoundException("账本不存在")
-    return book
+    return {
+      ...book,
+      createTime: toIsoString(book.createTime),
+      updateTime: toIsoString(book.updateTime),
+    }
   }
 
   async create(values: CreateBook & { bookId: string }): Promise<Book> {
@@ -64,7 +69,7 @@ export class BookService {
     if (query.ownerUserId) where.push(eq(bookSchema.ownerUserId, query.ownerUserId))
     if (query.name) where.push(like(bookSchema.name, `%${query.name}%`))
 
-    return this.pg.pdb
+    const rows = await this.pg.pdb
       .select({
         bookId: bookSchema.bookId,
         name: bookSchema.name,
@@ -77,6 +82,10 @@ export class BookService {
       })
       .from(bookSchema)
       .where(and(...where))
+    return rows.map((row) => ({
+      ...row,
+      createTime: toIsoString(row.createTime),
+      updateTime: toIsoString(row.updateTime),
+    }))
   }
 }
-

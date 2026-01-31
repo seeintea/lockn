@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common"
 import { and, eq, like } from "drizzle-orm"
+import { toIsoString } from "@/common/utils/date"
 import { PgService, pgSchema } from "@/database/postgresql"
 import type { CreatePermission, Permission, UpdatePermission } from "./permission.dto"
 
@@ -25,7 +26,11 @@ export class PermissionService {
       .where(and(eq(permissionSchema.permissionId, permissionId), eq(permissionSchema.isDeleted, false)))
     const permission = permissions[0]
     if (!permission) throw new NotFoundException("权限不存在")
-    return permission
+    return {
+      ...permission,
+      createTime: toIsoString(permission.createTime),
+      updateTime: toIsoString(permission.updateTime),
+    }
   }
 
   async create(values: CreatePermission & { permissionId: string }): Promise<Permission> {
@@ -67,7 +72,7 @@ export class PermissionService {
     if (query.code) where.push(like(permissionSchema.code, `%${query.code}%`))
     if (query.module) where.push(eq(permissionSchema.module, query.module))
 
-    return this.pg.pdb
+    const rows = await this.pg.pdb
       .select({
         permissionId: permissionSchema.permissionId,
         code: permissionSchema.code,
@@ -80,6 +85,10 @@ export class PermissionService {
       })
       .from(permissionSchema)
       .where(and(...where))
+    return rows.map((row) => ({
+      ...row,
+      createTime: toIsoString(row.createTime),
+      updateTime: toIsoString(row.updateTime),
+    }))
   }
 }
-

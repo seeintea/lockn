@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common"
 import { and, eq } from "drizzle-orm"
+import { toIsoString } from "@/common/utils/date"
 import { PgService, pgSchema } from "@/database/postgresql"
 import type { CreateRolePermission, RolePermission } from "./role-permission.dto"
 
@@ -20,7 +21,10 @@ export class RolePermissionService {
       .where(and(eq(rolePermissionSchema.roleId, roleId), eq(rolePermissionSchema.permissionId, permissionId)))
     const row = rows[0]
     if (!row) throw new NotFoundException("角色权限关联不存在")
-    return row
+    return {
+      ...row,
+      createTime: toIsoString(row.createTime),
+    }
   }
 
   async create(values: CreateRolePermission): Promise<RolePermission> {
@@ -53,6 +57,10 @@ export class RolePermissionService {
     if (where.length) {
       qb.where(and(...where))
     }
-    return qb
+    const rows = await qb
+    return rows.map((row) => ({
+      ...row,
+      createTime: toIsoString(row.createTime),
+    }))
   }
 }

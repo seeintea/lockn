@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common"
 import { and, eq, like } from "drizzle-orm"
+import { toIsoString } from "@/common/utils/date"
 import { PgService, pgSchema } from "@/database/postgresql"
 import type { CreateRole, Role, UpdateRole } from "./role.dto"
 
@@ -24,7 +25,11 @@ export class RoleService {
       .where(and(eq(roleSchema.roleId, roleId), eq(roleSchema.isDeleted, false)))
     const role = roles[0]
     if (!role) throw new NotFoundException("角色不存在")
-    return role
+    return {
+      ...role,
+      createTime: toIsoString(role.createTime),
+      updateTime: toIsoString(role.updateTime),
+    }
   }
 
   async create(values: CreateRole & { roleId: string }): Promise<Role> {
@@ -61,7 +66,7 @@ export class RoleService {
     if (query.roleCode) where.push(like(roleSchema.roleCode, `%${query.roleCode}%`))
     if (query.roleName) where.push(like(roleSchema.roleName, `%${query.roleName}%`))
 
-    return this.pg.pdb
+    const rows = await this.pg.pdb
       .select({
         roleId: roleSchema.roleId,
         roleCode: roleSchema.roleCode,
@@ -73,6 +78,10 @@ export class RoleService {
       })
       .from(roleSchema)
       .where(and(...where))
+    return rows.map((row) => ({
+      ...row,
+      createTime: toIsoString(row.createTime),
+      updateTime: toIsoString(row.updateTime),
+    }))
   }
 }
-

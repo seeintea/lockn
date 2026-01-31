@@ -4,7 +4,7 @@ import { z } from "zod"
 const shape = {
   roleId: z.string().length(32).describe("角色ID"),
   permissionId: z.string().length(32).describe("权限ID"),
-  createTime: z.date().describe("创建时间"),
+  createTime: z.iso.datetime().describe("创建时间"),
 } satisfies z.ZodRawShape
 
 const rolePermissionResponseSchema = z

@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common"
 import { and, eq, like } from "drizzle-orm"
+import { toIsoString } from "@/common/utils/date"
 import { PgService, pgSchema } from "@/database/postgresql"
 import type { CreateUser, UpdateUser, User } from "./user.dto"
 
@@ -25,7 +26,11 @@ export class UserService {
       .where(and(eq(userSchema.userId, userId), eq(userSchema.isDeleted, false)))
     const user = users[0]
     if (!user) throw new NotFoundException("用户不存在")
-    return user
+    return {
+      ...user,
+      createTime: toIsoString(user.createTime),
+      updateTime: toIsoString(user.updateTime),
+    }
   }
 
   async create(values: CreateUser & { userId: string }): Promise<User> {
@@ -68,7 +73,7 @@ export class UserService {
     if (query.userId) where.push(eq(userSchema.userId, query.userId))
     if (query.username) where.push(like(userSchema.username, `%${query.username}%`))
 
-    return this.pg.pdb
+    const rows = await this.pg.pdb
       .select({
         userId: userSchema.userId,
         username: userSchema.username,
@@ -81,6 +86,10 @@ export class UserService {
       })
       .from(userSchema)
       .where(and(...where))
+    return rows.map((row) => ({
+      ...row,
+      createTime: toIsoString(row.createTime),
+      updateTime: toIsoString(row.updateTime),
+    }))
   }
 }
-

@@ -8,8 +8,8 @@ const shape = {
   timezone: z.string().min(1).max(50).describe("时区"),
   ownerUserId: z.string().length(32).describe("所有者用户ID"),
   isDeleted: z.boolean().describe("是否删除"),
-  createTime: z.date().describe("创建时间"),
-  updateTime: z.date().describe("更新时间"),
+  createTime: z.iso.datetime().describe("创建时间"),
+  updateTime: z.iso.datetime().describe("更新时间"),
 } satisfies z.ZodRawShape
 
 const bookResponseSchema = z

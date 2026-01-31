@@ -10,8 +10,8 @@ const shape = {
   phone: z.string().max(11).describe("手机号"),
   isDisabled: z.boolean().describe("是否禁用"),
   isDeleted: z.boolean().describe("是否删除"),
-  createTime: z.date().describe("创建时间"),
-  updateTime: z.date().describe("更新时间"),
+  createTime: z.iso.datetime().describe("创建时间"),
+  updateTime: z.iso.datetime().describe("更新时间"),
 } satisfies z.ZodRawShape
 
 const userResponseSchema = z

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common"
-import { POSTGRESQL_TOKEN } from "@/constants/database"
+import { POSTGRESQL_TOKEN } from "@/constants/database.constants"
 import type { PgDatabase } from "./postgresql.provider"
 
 @Injectable()

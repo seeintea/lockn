@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common"
 import { and, eq } from "drizzle-orm"
+import { toIsoString } from "@/common/utils/date"
 import { PgService, pgSchema } from "@/database/postgresql"
 import type { BookMember, CreateBookMember, UpdateBookMember } from "./book-member.dto"
 
@@ -26,7 +27,11 @@ export class BookMemberService {
       .where(and(eq(bookMemberSchema.memberId, memberId), eq(bookMemberSchema.isDeleted, false)))
     const member = members[0]
     if (!member) throw new NotFoundException("账本成员不存在")
-    return member
+    return {
+      ...member,
+      createTime: toIsoString(member.createTime),
+      updateTime: toIsoString(member.updateTime),
+    }
   }
 
   async create(values: CreateBookMember & { memberId: string }): Promise<BookMember> {
@@ -65,7 +70,7 @@ export class BookMemberService {
     if (query.bookId) where.push(eq(bookMemberSchema.bookId, query.bookId))
     if (query.userId) where.push(eq(bookMemberSchema.userId, query.userId))
 
-    return this.pg.pdb
+    const rows = await this.pg.pdb
       .select({
         memberId: bookMemberSchema.memberId,
         bookId: bookMemberSchema.bookId,
@@ -79,5 +84,10 @@ export class BookMemberService {
       })
       .from(bookMemberSchema)
       .where(and(...where))
+    return rows.map((row) => ({
+      ...row,
+      createTime: toIsoString(row.createTime),
+      updateTime: toIsoString(row.updateTime),
+    }))
   }
 }
