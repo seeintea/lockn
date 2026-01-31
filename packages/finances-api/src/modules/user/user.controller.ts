@@ -2,7 +2,15 @@ import { Body, Controller, Get, Post, Query } from "@nestjs/common"
 import { ApiOperation, ApiTags } from "@nestjs/swagger"
 import { nanoid } from "nanoid"
 import { ZodResponse } from "nestjs-zod"
-import { CreateUserDto, DeleteUserDto, UpdateUserDto, UserListQueryDto, UserPageResponseDto, UserResponseDto } from "./user.dto"
+import { Permission } from "@/common/decorators/permission.decorator"
+import {
+  CreateUserDto,
+  DeleteUserDto,
+  UpdateUserDto,
+  UserListQueryDto,
+  UserPageResponseDto,
+  UserResponseDto,
+} from "./user.dto"
 import { UserService } from "./user.service"
 
 @ApiTags("用户")
@@ -11,6 +19,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post("create")
+  @Permission("sys:user:create")
   @ApiOperation({ summary: "创建用户" })
   @ZodResponse({ type: UserResponseDto })
   async create(@Body() body: CreateUserDto) {
@@ -18,6 +27,7 @@ export class UserController {
   }
 
   @Get("find")
+  @Permission("sys:user:read")
   @ApiOperation({ summary: "查询用户" })
   @ZodResponse({ type: UserResponseDto })
   async find(@Query("userId") userId: string) {
@@ -25,6 +35,7 @@ export class UserController {
   }
 
   @Get("list")
+  @Permission("sys:user:read")
   @ApiOperation({ summary: "查询用户列表" })
   @ZodResponse({ type: UserPageResponseDto })
   async list(@Query() query: UserListQueryDto) {
@@ -32,6 +43,7 @@ export class UserController {
   }
 
   @Post("update")
+  @Permission("sys:user:update")
   @ApiOperation({ summary: "更新用户" })
   @ZodResponse({ type: UserResponseDto })
   async update(@Body() body: UpdateUserDto) {
@@ -39,6 +51,7 @@ export class UserController {
   }
 
   @Post("delete")
+  @Permission("sys:user:delete")
   @ApiOperation({ summary: "删除用户" })
   async delete(@Body() body: DeleteUserDto) {
     return this.userService.delete(body.userId)

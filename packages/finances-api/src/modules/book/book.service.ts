@@ -1,12 +1,13 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common"
-import { and, desc, eq, like, sql } from "drizzle-orm"
+import { and, desc, eq, isNotNull, like, or, sql } from "drizzle-orm"
+import { nanoid } from "nanoid"
 import { toIsoString } from "@/common/utils/date"
 import { normalizePage, toPageResult } from "@/common/utils/pagination"
 import { PgService, pgSchema } from "@/database/postgresql"
 import type { PageResult } from "@/types/response"
 import type { Book, CreateBook, UpdateBook } from "./book.dto"
 
-const { book: bookSchema } = pgSchema
+const { book: bookSchema, bookMember: bookMemberSchema } = pgSchema
 
 @Injectable()
 export class BookService {
@@ -28,7 +29,20 @@ export class BookService {
       .where(and(eq(bookSchema.bookId, bookId), eq(bookSchema.isDeleted, false)))
     const book = books[0]
     if (!book) throw new NotFoundException("账本不存在")
-    if (book.ownerUserId !== userId) throw new ForbiddenException("No access to this book")
+    if (book.ownerUserId !== userId) {
+      const rows = await this.pg.pdb
+        .select({ userId: bookMemberSchema.userId })
+        .from(bookMemberSchema)
+        .where(
+          and(
+            eq(bookMemberSchema.bookId, bookId),
+            eq(bookMemberSchema.userId, userId),
+            eq(bookMemberSchema.isDeleted, false),
+          ),
+        )
+        .limit(1)
+      if (!rows[0]) throw new ForbiddenException("No access to this book")
+    }
     return {
       ...book,
       createTime: toIsoString(book.createTime),
@@ -45,10 +59,20 @@ export class BookService {
       ownerUserId: values.ownerUserId,
       isDeleted: false,
     })
+    await this.pg.pdb.insert(bookMemberSchema).values({
+      memberId: nanoid(32),
+      bookId: values.bookId,
+      userId: values.ownerUserId,
+      roleCode: "Owner",
+      scopeType: "all",
+      scope: {} as object,
+      isDeleted: false,
+    })
     return this.find(values.bookId, values.ownerUserId)
   }
 
   async update(values: UpdateBook, userId: string): Promise<Book> {
+    await this.find(values.bookId, userId)
     await this.pg.pdb
       .update(bookSchema)
       .set({
@@ -57,15 +81,13 @@ export class BookService {
         ...(values.timezone !== undefined ? { timezone: values.timezone } : {}),
         ...(values.isDeleted !== undefined ? { isDeleted: values.isDeleted } : {}),
       })
-      .where(and(eq(bookSchema.bookId, values.bookId), eq(bookSchema.ownerUserId, userId)))
+      .where(eq(bookSchema.bookId, values.bookId))
     return this.find(values.bookId, userId)
   }
 
   async delete(bookId: string, userId: string): Promise<boolean> {
-    await this.pg.pdb
-      .update(bookSchema)
-      .set({ isDeleted: true })
-      .where(and(eq(bookSchema.bookId, bookId), eq(bookSchema.ownerUserId, userId)))
+    await this.find(bookId, userId)
+    await this.pg.pdb.update(bookSchema).set({ isDeleted: true }).where(eq(bookSchema.bookId, bookId))
     return true
   }
 
@@ -78,15 +100,25 @@ export class BookService {
     },
     userId: string,
   ): Promise<PageResult<Book>> {
-    const where: Parameters<typeof and> = [eq(bookSchema.isDeleted, false)]
-    where.push(eq(bookSchema.ownerUserId, userId))
+    const where: Parameters<typeof and> = [
+      eq(bookSchema.isDeleted, false),
+      or(eq(bookSchema.ownerUserId, userId), isNotNull(bookMemberSchema.memberId)),
+    ]
     if (query.name) where.push(like(bookSchema.name, `%${query.name}%`))
 
     const pageParams = normalizePage(query)
 
     const totalRows = await this.pg.pdb
-      .select({ count: sql<number>`count(*)` })
+      .select({ count: sql<number>`count(distinct ${bookSchema.bookId})` })
       .from(bookSchema)
+      .leftJoin(
+        bookMemberSchema,
+        and(
+          eq(bookMemberSchema.bookId, bookSchema.bookId),
+          eq(bookMemberSchema.userId, userId),
+          eq(bookMemberSchema.isDeleted, false),
+        ),
+      )
       .where(and(...where))
     const total = Number(totalRows[0]?.count ?? 0)
 
@@ -102,6 +134,14 @@ export class BookService {
         updateTime: bookSchema.updateTime,
       })
       .from(bookSchema)
+      .leftJoin(
+        bookMemberSchema,
+        and(
+          eq(bookMemberSchema.bookId, bookSchema.bookId),
+          eq(bookMemberSchema.userId, userId),
+          eq(bookMemberSchema.isDeleted, false),
+        ),
+      )
       .where(and(...where))
       .orderBy(desc(bookSchema.createTime))
       .limit(pageParams.limit)

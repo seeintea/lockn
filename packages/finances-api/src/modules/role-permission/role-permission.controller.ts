@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Post, Query } from "@nestjs/common"
 import { ApiOperation, ApiTags } from "@nestjs/swagger"
 import { ZodResponse } from "nestjs-zod"
+import { Permission } from "@/common/decorators/permission.decorator"
 import {
   CreateRolePermissionDto,
   DeleteRolePermissionDto,
@@ -16,6 +17,7 @@ export class RolePermissionController {
   constructor(private readonly rolePermissionService: RolePermissionService) {}
 
   @Post("create")
+  @Permission("sys:role-permission:create")
   @ApiOperation({ summary: "创建角色权限关联" })
   @ZodResponse({ type: RolePermissionResponseDto })
   async create(@Body() body: CreateRolePermissionDto) {
@@ -23,6 +25,7 @@ export class RolePermissionController {
   }
 
   @Get("find")
+  @Permission("sys:role-permission:read")
   @ApiOperation({ summary: "查询角色权限关联" })
   @ZodResponse({ type: RolePermissionResponseDto })
   async find(@Query("roleId") roleId: string, @Query("permissionId") permissionId: string) {
@@ -30,6 +33,7 @@ export class RolePermissionController {
   }
 
   @Get("list")
+  @Permission("sys:role-permission:read")
   @ApiOperation({ summary: "查询角色权限关联列表" })
   @ZodResponse({ type: RolePermissionPageResponseDto })
   async list(@Query() query: RolePermissionListQueryDto) {
@@ -37,6 +41,7 @@ export class RolePermissionController {
   }
 
   @Post("delete")
+  @Permission("sys:role-permission:delete")
   @ApiOperation({ summary: "删除角色权限关联" })
   async delete(@Body() body: DeleteRolePermissionDto) {
     return this.rolePermissionService.delete(body.roleId, body.permissionId)
