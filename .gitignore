@@ -32,5 +32,14 @@ dist-ssr
 # system file ignore
 .DS_Store
 
-# @goi/dashboard-api
+# @goi/finances-api
 **/migrations/*
+
+# @goi/finances
+count.txt
+.nitro
+.tanstack
+.wrangler
+.output
+.vinxi
+todos.json
