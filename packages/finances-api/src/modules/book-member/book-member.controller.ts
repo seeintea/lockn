@@ -2,6 +2,7 @@ import { Body, Controller, Get, Post, Query } from "@nestjs/common"
 import { ApiOperation, ApiTags } from "@nestjs/swagger"
 import { nanoid } from "nanoid"
 import { ZodResponse } from "nestjs-zod"
+import { BookId } from "@/common/decorators/current-user.decorator"
 import {
   BookMemberListQueryDto,
   BookMemberPageResponseDto,
@@ -20,34 +21,34 @@ export class BookMemberController {
   @Post("create")
   @ApiOperation({ summary: "创建账本成员" })
   @ZodResponse({ type: BookMemberResponseDto })
-  async create(@Body() body: CreateBookMemberDto) {
-    return this.bookMemberService.create({ ...body, memberId: nanoid(32) })
+  async create(@BookId() bookId: string, @Body() body: CreateBookMemberDto) {
+    return this.bookMemberService.create({ ...body, bookId, memberId: nanoid(32) })
   }
 
   @Get("find")
   @ApiOperation({ summary: "查询账本成员" })
   @ZodResponse({ type: BookMemberResponseDto })
-  async find(@Query("memberId") memberId: string) {
-    return this.bookMemberService.find(memberId)
+  async find(@BookId() bookId: string, @Query("memberId") memberId: string) {
+    return this.bookMemberService.find(bookId, memberId)
   }
 
   @Get("list")
   @ApiOperation({ summary: "查询账本成员列表" })
   @ZodResponse({ type: BookMemberPageResponseDto })
-  async list(@Query() query: BookMemberListQueryDto) {
-    return this.bookMemberService.list(query)
+  async list(@BookId() bookId: string, @Query() query: BookMemberListQueryDto) {
+    return this.bookMemberService.list(bookId, query)
   }
 
   @Post("update")
   @ApiOperation({ summary: "更新账本成员" })
   @ZodResponse({ type: BookMemberResponseDto })
-  async update(@Body() body: UpdateBookMemberDto) {
-    return this.bookMemberService.update(body)
+  async update(@BookId() bookId: string, @Body() body: UpdateBookMemberDto) {
+    return this.bookMemberService.update(bookId, body)
   }
 
   @Post("delete")
   @ApiOperation({ summary: "删除账本成员" })
-  async delete(@Body() body: DeleteBookMemberDto) {
-    return this.bookMemberService.delete(body.memberId)
+  async delete(@BookId() bookId: string, @Body() body: DeleteBookMemberDto) {
+    return this.bookMemberService.delete(bookId, body.memberId)
   }
 }

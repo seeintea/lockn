@@ -2,7 +2,15 @@ import { Body, Controller, Get, Post, Query } from "@nestjs/common"
 import { ApiOperation, ApiTags } from "@nestjs/swagger"
 import { nanoid } from "nanoid"
 import { ZodResponse } from "nestjs-zod"
-import { BookListQueryDto, BookPageResponseDto, BookResponseDto, CreateBookDto, DeleteBookDto, UpdateBookDto } from "./book.dto"
+import { CurrentUser } from "@/common/decorators/current-user.decorator"
+import {
+  BookListQueryDto,
+  BookPageResponseDto,
+  BookResponseDto,
+  CreateBookDto,
+  DeleteBookDto,
+  UpdateBookDto,
+} from "./book.dto"
 import { BookService } from "./book.service"
 
 @ApiTags("账本")
@@ -13,34 +21,34 @@ export class BookController {
   @Post("create")
   @ApiOperation({ summary: "创建账本" })
   @ZodResponse({ type: BookResponseDto })
-  async create(@Body() body: CreateBookDto) {
-    return this.bookService.create({ ...body, bookId: nanoid(32) })
+  async create(@CurrentUser() user: { userId: string }, @Body() body: CreateBookDto) {
+    return this.bookService.create({ ...body, ownerUserId: user.userId, bookId: nanoid(32) })
   }
 
   @Get("find")
   @ApiOperation({ summary: "查询账本" })
   @ZodResponse({ type: BookResponseDto })
-  async find(@Query("bookId") bookId: string) {
-    return this.bookService.find(bookId)
+  async find(@CurrentUser() user: { userId: string }, @Query("bookId") bookId: string) {
+    return this.bookService.find(bookId, user.userId)
   }
 
   @Get("list")
   @ApiOperation({ summary: "查询账本列表" })
   @ZodResponse({ type: BookPageResponseDto })
-  async list(@Query() query: BookListQueryDto) {
-    return this.bookService.list(query)
+  async list(@CurrentUser() user: { userId: string }, @Query() query: BookListQueryDto) {
+    return this.bookService.list(query, user.userId)
   }
 
   @Post("update")
   @ApiOperation({ summary: "更新账本" })
   @ZodResponse({ type: BookResponseDto })
-  async update(@Body() body: UpdateBookDto) {
-    return this.bookService.update(body)
+  async update(@CurrentUser() user: { userId: string }, @Body() body: UpdateBookDto) {
+    return this.bookService.update(body, user.userId)
   }
 
   @Post("delete")
   @ApiOperation({ summary: "删除账本" })
-  async delete(@Body() body: DeleteBookDto) {
-    return this.bookService.delete(body.bookId)
+  async delete(@CurrentUser() user: { userId: string }, @Body() body: DeleteBookDto) {
+    return this.bookService.delete(body.bookId, user.userId)
   }
 }

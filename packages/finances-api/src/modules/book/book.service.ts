@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common"
+import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common"
 import { and, desc, eq, like, sql } from "drizzle-orm"
 import { toIsoString } from "@/common/utils/date"
 import { normalizePage, toPageResult } from "@/common/utils/pagination"
@@ -12,7 +12,7 @@ const { book: bookSchema } = pgSchema
 export class BookService {
   constructor(private readonly pg: PgService) {}
 
-  async find(bookId: string): Promise<Book> {
+  async find(bookId: string, userId: string): Promise<Book> {
     const books = await this.pg.pdb
       .select({
         bookId: bookSchema.bookId,
@@ -28,6 +28,7 @@ export class BookService {
       .where(and(eq(bookSchema.bookId, bookId), eq(bookSchema.isDeleted, false)))
     const book = books[0]
     if (!book) throw new NotFoundException("账本不存在")
+    if (book.ownerUserId !== userId) throw new ForbiddenException("No access to this book")
     return {
       ...book,
       createTime: toIsoString(book.createTime),
@@ -44,36 +45,41 @@ export class BookService {
       ownerUserId: values.ownerUserId,
       isDeleted: false,
     })
-    return this.find(values.bookId)
+    return this.find(values.bookId, values.ownerUserId)
   }
 
-  async update(values: UpdateBook): Promise<Book> {
+  async update(values: UpdateBook, userId: string): Promise<Book> {
     await this.pg.pdb
       .update(bookSchema)
       .set({
         ...(values.name !== undefined ? { name: values.name } : {}),
         ...(values.currency !== undefined ? { currency: values.currency } : {}),
         ...(values.timezone !== undefined ? { timezone: values.timezone } : {}),
-        ...(values.ownerUserId !== undefined ? { ownerUserId: values.ownerUserId } : {}),
         ...(values.isDeleted !== undefined ? { isDeleted: values.isDeleted } : {}),
       })
-      .where(eq(bookSchema.bookId, values.bookId))
-    return this.find(values.bookId)
+      .where(and(eq(bookSchema.bookId, values.bookId), eq(bookSchema.ownerUserId, userId)))
+    return this.find(values.bookId, userId)
   }
 
-  async delete(bookId: string): Promise<boolean> {
-    await this.pg.pdb.update(bookSchema).set({ isDeleted: true }).where(eq(bookSchema.bookId, bookId))
+  async delete(bookId: string, userId: string): Promise<boolean> {
+    await this.pg.pdb
+      .update(bookSchema)
+      .set({ isDeleted: true })
+      .where(and(eq(bookSchema.bookId, bookId), eq(bookSchema.ownerUserId, userId)))
     return true
   }
 
-  async list(query: {
-    ownerUserId?: string
-    name?: string
-    page?: number | string
-    pageSize?: number | string
-  }): Promise<PageResult<Book>> {
+  async list(
+    query: {
+      ownerUserId?: string
+      name?: string
+      page?: number | string
+      pageSize?: number | string
+    },
+    userId: string,
+  ): Promise<PageResult<Book>> {
     const where: Parameters<typeof and> = [eq(bookSchema.isDeleted, false)]
-    if (query.ownerUserId) where.push(eq(bookSchema.ownerUserId, query.ownerUserId))
+    where.push(eq(bookSchema.ownerUserId, userId))
     if (query.name) where.push(like(bookSchema.name, `%${query.name}%`))
 
     const pageParams = normalizePage(query)

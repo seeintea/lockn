@@ -12,7 +12,7 @@ const { bookMember: bookMemberSchema } = pgSchema
 export class BookMemberService {
   constructor(private readonly pg: PgService) {}
 
-  async find(memberId: string): Promise<BookMember> {
+  async find(bookId: string, memberId: string): Promise<BookMember> {
     const members = await this.pg.pdb
       .select({
         memberId: bookMemberSchema.memberId,
@@ -26,7 +26,9 @@ export class BookMemberService {
         updateTime: bookMemberSchema.updateTime,
       })
       .from(bookMemberSchema)
-      .where(and(eq(bookMemberSchema.memberId, memberId), eq(bookMemberSchema.isDeleted, false)))
+      .where(
+        and(eq(bookMemberSchema.bookId, bookId), eq(bookMemberSchema.memberId, memberId), eq(bookMemberSchema.isDeleted, false)),
+      )
     const member = members[0]
     if (!member) throw new NotFoundException("账本成员不存在")
     return {
@@ -46,10 +48,10 @@ export class BookMemberService {
       scope: (values.scope ?? {}) as object,
       isDeleted: false,
     })
-    return this.find(values.memberId)
+    return this.find(values.bookId, values.memberId)
   }
 
-  async update(values: UpdateBookMember): Promise<BookMember> {
+  async update(bookId: string, values: UpdateBookMember): Promise<BookMember> {
     await this.pg.pdb
       .update(bookMemberSchema)
       .set({
@@ -58,23 +60,27 @@ export class BookMemberService {
         ...(values.scope !== undefined ? { scope: values.scope as object } : {}),
         ...(values.isDeleted !== undefined ? { isDeleted: values.isDeleted } : {}),
       })
-      .where(eq(bookMemberSchema.memberId, values.memberId))
-    return this.find(values.memberId)
+      .where(and(eq(bookMemberSchema.bookId, bookId), eq(bookMemberSchema.memberId, values.memberId)))
+    return this.find(bookId, values.memberId)
   }
 
-  async delete(memberId: string): Promise<boolean> {
-    await this.pg.pdb.update(bookMemberSchema).set({ isDeleted: true }).where(eq(bookMemberSchema.memberId, memberId))
+  async delete(bookId: string, memberId: string): Promise<boolean> {
+    await this.pg.pdb
+      .update(bookMemberSchema)
+      .set({ isDeleted: true })
+      .where(and(eq(bookMemberSchema.bookId, bookId), eq(bookMemberSchema.memberId, memberId)))
     return true
   }
 
-  async list(query: {
-    bookId?: string
+  async list(
+    bookId: string,
+    query: {
     userId?: string
     page?: number | string
     pageSize?: number | string
-  }): Promise<PageResult<BookMember>> {
-    const where: Parameters<typeof and> = [eq(bookMemberSchema.isDeleted, false)]
-    if (query.bookId) where.push(eq(bookMemberSchema.bookId, query.bookId))
+    },
+  ): Promise<PageResult<BookMember>> {
+    const where: Parameters<typeof and> = [eq(bookMemberSchema.isDeleted, false), eq(bookMemberSchema.bookId, bookId)]
     if (query.userId) where.push(eq(bookMemberSchema.userId, query.userId))
 
     const pageParams = normalizePage(query)

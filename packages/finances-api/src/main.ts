@@ -8,7 +8,7 @@ async function bootstrap() {
 
   app.enableCors({
     origin: "*",
-    allowedHeaders: ["Authorization", "content-type"],
+    allowedHeaders: ["Authorization", "content-type", "x-book-id"],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   })
 

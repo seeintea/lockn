@@ -1,11 +1,24 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common"
+import {
+  BadRequestException,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from "@nestjs/common"
 import { Reflector } from "@nestjs/core"
 import { JwtService } from "@nestjs/jwt"
+import { and, eq } from "drizzle-orm"
 import type { Request } from "express"
 import { PUBLIC_DECORATOR } from "@/constants/auth.constants"
+import { PgService, pgSchema } from "@/database/postgresql"
 import { RedisService } from "@/database/redis/redis.service"
 
 type JwtPayload = { userId?: string; exp?: number; iat?: number }
+type AuthUser = { userId: string; username: string }
+
+const { book: bookSchema, bookMember: bookMemberSchema } = pgSchema
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -13,6 +26,7 @@ export class AuthGuard implements CanActivate {
     private readonly jwtService: JwtService,
     private readonly reflector: Reflector,
     private readonly redisService: RedisService,
+    private readonly pg: PgService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -31,13 +45,70 @@ export class AuthGuard implements CanActivate {
 
     const cached = await this.redisService.get(`auth:token:${token}`)
     if (!cached) throw new UnauthorizedException("Token invalid or expired")
-    ;(request as unknown as { user?: unknown }).user = JSON.parse(cached)
+
+    const user = JSON.parse(cached) as AuthUser
+    ;(request as unknown as { user?: AuthUser }).user = user
+
+    if (this.isFinanceRequest(request) && !this.isFinanceBookOpenEndpoint(request)) {
+      const bookId = this.extractBookId(request)
+      if (!bookId) throw new BadRequestException("bookId is required")
+      ;(request as unknown as { bookId?: string }).bookId = bookId
+      await this.assertBookAccess(user.userId, bookId)
+    }
     return true
   }
 
   private isSwaggerRequest(request: Request): boolean {
     const url = request.originalUrl || request.url || ""
     return url.startsWith("/swagger") || url.startsWith("/swagger/")
+  }
+
+  private isFinanceRequest(request: Request): boolean {
+    const url = request.originalUrl || request.url || ""
+    return url.startsWith("/api/ff/") || url.startsWith("/ff/")
+  }
+
+  private isFinanceBookOpenEndpoint(request: Request): boolean {
+    const url = request.originalUrl || request.url || ""
+    return (
+      url.startsWith("/api/ff/book/list") ||
+      url.startsWith("/api/ff/book/create") ||
+      url.startsWith("/ff/book/list") ||
+      url.startsWith("/ff/book/create")
+    )
+  }
+
+  private extractBookId(request: Request): string | undefined {
+    const queryBookId = (request.query as Record<string, unknown> | undefined)?.bookId
+    if (typeof queryBookId === "string" && queryBookId.length > 0) return queryBookId
+    const bodyBookId = (request.body as Record<string, unknown> | undefined)?.bookId
+    if (typeof bodyBookId === "string" && bodyBookId.length > 0) return bodyBookId
+    const headerBookId = request.headers["x-book-id"]
+    if (typeof headerBookId === "string" && headerBookId.length > 0) return headerBookId
+    return undefined
+  }
+
+  private async assertBookAccess(userId: string, bookId: string): Promise<void> {
+    const books = await this.pg.pdb
+      .select({ ownerUserId: bookSchema.ownerUserId })
+      .from(bookSchema)
+      .where(and(eq(bookSchema.bookId, bookId), eq(bookSchema.isDeleted, false)))
+    const book = books[0]
+    if (!book) throw new NotFoundException("账本不存在")
+    if (book.ownerUserId === userId) return
+
+    const rows = await this.pg.pdb
+      .select({ bookId: bookMemberSchema.bookId })
+      .from(bookMemberSchema)
+      .where(
+        and(
+          eq(bookMemberSchema.bookId, bookId),
+          eq(bookMemberSchema.userId, userId),
+          eq(bookMemberSchema.isDeleted, false),
+        ),
+      )
+      .limit(1)
+    if (!rows[0]) throw new ForbiddenException("No access to this book")
   }
 
   private extractBearerToken(request: Request): string | undefined {
