@@ -1,0 +1,70 @@
+import { createZodDto } from "nestjs-zod"
+import { z } from "zod"
+
+const shape = {
+  permissionId: z.string().length(32).describe("权限ID"),
+  code: z.string().min(1).max(80).describe("权限编码"),
+  name: z.string().max(80).describe("权限名称"),
+  module: z.string().max(30).describe("所属模块"),
+  isDisabled: z.boolean().describe("是否禁用"),
+  isDeleted: z.boolean().describe("是否删除"),
+  createTime: z.date().describe("创建时间"),
+  updateTime: z.date().describe("更新时间"),
+} satisfies z.ZodRawShape
+
+const permissionResponseSchema = z
+  .object({
+    permissionId: shape.permissionId,
+    code: shape.code,
+    name: shape.name,
+    module: shape.module,
+    isDisabled: shape.isDisabled,
+    isDeleted: shape.isDeleted,
+    createTime: shape.createTime,
+    updateTime: shape.updateTime,
+  })
+  .meta({ id: "权限响应类型" })
+
+const createPermissionSchema = z
+  .object({
+    code: shape.code,
+    name: shape.name.optional(),
+    module: shape.module.optional(),
+    isDisabled: shape.isDisabled.optional(),
+  })
+  .meta({ id: "创建权限请求" })
+
+const updatePermissionSchema = z
+  .object({
+    permissionId: shape.permissionId,
+    code: shape.code.optional(),
+    name: shape.name.optional(),
+    module: shape.module.optional(),
+    isDisabled: shape.isDisabled.optional(),
+    isDeleted: shape.isDeleted.optional(),
+  })
+  .meta({ id: "更新权限请求" })
+
+const deletePermissionSchema = z
+  .object({
+    permissionId: shape.permissionId,
+  })
+  .meta({ id: "删除权限请求" })
+
+const permissionListQuerySchema = z
+  .object({
+    code: shape.code.optional(),
+    module: shape.module.optional(),
+  })
+  .meta({ id: "查询权限列表请求" })
+
+export class PermissionResponseDto extends createZodDto(permissionResponseSchema) {}
+export class CreatePermissionDto extends createZodDto(createPermissionSchema) {}
+export class UpdatePermissionDto extends createZodDto(updatePermissionSchema) {}
+export class DeletePermissionDto extends createZodDto(deletePermissionSchema) {}
+export class PermissionListQueryDto extends createZodDto(permissionListQuerySchema) {}
+
+export type Permission = z.infer<typeof permissionResponseSchema>
+export type CreatePermission = z.infer<typeof createPermissionSchema>
+export type UpdatePermission = z.infer<typeof updatePermissionSchema>
+

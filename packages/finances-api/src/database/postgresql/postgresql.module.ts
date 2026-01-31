@@ -8,6 +8,6 @@ import { PgService } from "./postgresql.service"
 @Module({
   imports: [ConfigModule],
   providers: [PgProvider, PgService],
-  exports: [PgProvider, POSTGRESQL_TOKEN],
+  exports: [PgProvider, POSTGRESQL_TOKEN, PgService],
 })
 export class PgModule {}

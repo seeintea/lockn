@@ -1,0 +1,52 @@
+import { Body, Controller, Get, Post, Query } from "@nestjs/common"
+import { ApiOperation, ApiTags } from "@nestjs/swagger"
+import { nanoid } from "nanoid"
+import { ZodResponse } from "nestjs-zod"
+import {
+  CreatePermissionDto,
+  DeletePermissionDto,
+  PermissionListQueryDto,
+  PermissionResponseDto,
+  UpdatePermissionDto,
+} from "./permission.dto"
+import { PermissionService } from "./permission.service"
+
+@ApiTags("权限")
+@Controller("sys/permission")
+export class PermissionController {
+  constructor(private readonly permissionService: PermissionService) {}
+
+  @Post("create")
+  @ApiOperation({ summary: "创建权限" })
+  @ZodResponse({ type: PermissionResponseDto })
+  async create(@Body() body: CreatePermissionDto) {
+    return this.permissionService.create({ ...body, permissionId: nanoid(32) })
+  }
+
+  @Get("find")
+  @ApiOperation({ summary: "查询权限" })
+  @ZodResponse({ type: PermissionResponseDto })
+  async find(@Query("permissionId") permissionId: string) {
+    return this.permissionService.find(permissionId)
+  }
+
+  @Get("list")
+  @ApiOperation({ summary: "查询权限列表" })
+  @ZodResponse({ type: [PermissionResponseDto] })
+  async list(@Query() query: PermissionListQueryDto) {
+    return this.permissionService.list(query)
+  }
+
+  @Post("update")
+  @ApiOperation({ summary: "更新权限" })
+  @ZodResponse({ type: PermissionResponseDto })
+  async update(@Body() body: UpdatePermissionDto) {
+    return this.permissionService.update(body)
+  }
+
+  @Post("delete")
+  @ApiOperation({ summary: "删除权限" })
+  async delete(@Body() body: DeletePermissionDto) {
+    return this.permissionService.delete(body.permissionId)
+  }
+}

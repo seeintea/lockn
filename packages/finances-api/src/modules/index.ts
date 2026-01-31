@@ -1,0 +1,6 @@
+export { BookModule } from "./book/book.module"
+export { BookMemberModule } from "./book-member/book-member.module"
+export { PermissionModule } from "./permission/permission.module"
+export { RoleModule } from "./role/role.module"
+export { RolePermissionModule } from "./role-permission/role-permission.module"
+export { UserModule } from "./user/user.module"
