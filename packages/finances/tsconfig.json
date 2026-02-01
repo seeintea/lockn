@@ -6,7 +6,7 @@
     "module": "ESNext",
     "outDir": "./dist",
     "rootDir": "./src",
-    "types": ["node"],
+    "types": ["node", "vite/client"],
     "allowJs": true,
     "checkJs": false,
     "baseUrl": ".",

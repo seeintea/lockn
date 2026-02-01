@@ -1,5 +1,5 @@
 import { redirect } from "@tanstack/react-router"
-import { userStore } from "@/stores"
+import { useUser } from "@/stores"
 import { FetchInstance, withHeader } from "./core"
 
 function isFinanceBookOpenEndpoint(url: string): boolean {
@@ -11,13 +11,13 @@ function shouldAttachBookId(url: string): boolean {
 }
 
 export const api = new FetchInstance({
-  baseURL: "",
+  baseURL: import.meta.env.PUBLIC_BASE_URL || "",
   timeout: 60000,
   retries: 0,
 })
 
 api.addRequestInterceptor(({ url, options }) => {
-  const { token, bookId } = userStore.getState()
+  const { token, bookId } = useUser.getState()
 
   let headers = options.headers
   if (token) {

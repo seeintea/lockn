@@ -13,6 +13,9 @@ const loginResponseSchema = z
     userId: z.string().length(32).describe("用户ID"),
     username: z.string().min(1).max(30).describe("用户名"),
     accessToken: z.string().min(1).describe("访问令牌"),
+    roleId: z.string().length(32).nullable().describe("角色ID"),
+    roleName: z.string().max(50).nullable().describe("角色名称"),
+    bookId: z.string().length(32).nullable().describe("账本ID"),
   })
   .meta({ id: "登录响应" })
 

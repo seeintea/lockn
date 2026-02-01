@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { userStore } from "@/stores"
+import { useUser } from "@/stores"
 import { type LoginParams, login, logout } from "../controllers/auth"
 
 export const authKeys = {
@@ -15,12 +15,16 @@ export function useLogin() {
     mutationFn: (params: LoginParams) => login(params),
     onSuccess: (resp) => {
       if (resp.code === 200) {
-        const { reset, setUser } = userStore.getState()
+        const { reset, setUser } = useUser.getState()
         reset()
         setUser({
           token: resp.data.accessToken,
           userId: resp.data.userId,
           username: resp.data.username,
+          bookId: resp.data.bookId,
+          roleId: resp.data.roleId,
+          roleName: resp.data.roleName,
+          roles: resp.data.roleId ? [resp.data.roleId] : [],
         })
         queryClient.invalidateQueries()
       }
@@ -34,7 +38,7 @@ export function useLogout() {
     mutationKey: authKeys.logout(),
     mutationFn: () => logout(),
     onSuccess: () => {
-      userStore.getState().reset()
+      useUser.getState().reset()
       queryClient.clear()
     },
   })
