@@ -14,11 +14,14 @@ import {
 import { useUser } from "@/stores"
 
 type NavItem = {
-  to: "/" | "/login"
+  to: "/" | "/login" | "/user-list"
   label: string
 }
 
-const navItems: NavItem[] = [{ to: "/", label: "首页" }]
+const navItems: NavItem[] = [
+  { to: "/", label: "首页" },
+  { to: "/user-list", label: "用户列表" },
+]
 
 export function AppSidebar() {
   const { pathname } = useLocation()

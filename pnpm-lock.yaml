@@ -245,6 +245,9 @@ importers:
       '@tanstack/react-router-devtools':
         specifier: ^1.157.18
         version: 1.157.18(@tanstack/react-router@1.157.18(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(@tanstack/router-core@1.157.18)(csstype@3.2.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@tanstack/react-table':
+        specifier: ^8.21.3
+        version: 8.21.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@tanstack/router-plugin':
         specifier: ^1.157.18
         version: 1.157.18(@rsbuild/core@1.6.15)(@tanstack/react-router@1.157.18(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(vite@8.0.0-beta.11(@types/node@25.1.0)(esbuild@0.27.2)(jiti@2.6.1)(tsx@4.21.0))
@@ -6769,6 +6772,12 @@ snapshots:
       '@tanstack/table-core': 8.21.3
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
+
+  '@tanstack/react-table@8.21.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
+    dependencies:
+      '@tanstack/table-core': 8.21.3
+      react: 19.2.4
+      react-dom: 19.2.4(react@19.2.4)
 
   '@tanstack/router-core@1.143.6':
     dependencies:

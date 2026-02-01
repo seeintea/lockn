@@ -50,7 +50,7 @@ export function useUpdateUser() {
       return resp.data
     },
     onSuccess: (user) => {
-      queryClient.invalidateQueries({ queryKey: userKeys.list() })
+      queryClient.invalidateQueries({ queryKey: userKeys.all })
       queryClient.invalidateQueries({ queryKey: userKeys.find(user.userId) })
     },
   })
@@ -68,4 +68,3 @@ export function useDeleteUser() {
     },
   })
 }
-
